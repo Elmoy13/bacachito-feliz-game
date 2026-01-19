@@ -1,15 +1,16 @@
-import { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users } from 'lucide-react';
-import Blob from '@/components/Blob';
-import ChallengeCard from '@/components/ChallengeCard';
-import FloatingAddButton from '@/components/FloatingAddButton';
+import { X, Plus, Users } from 'lucide-react';
+import StoryCard from '@/components/StoryCard';
+import ProgressBar from '@/components/ProgressBar';
+import PlayerInput from '@/components/PlayerInput';
 import { useGame } from '@/context/GameContext';
 
 const Game: React.FC = () => {
   const navigate = useNavigate();
-  const { players, isPlaying, resetGame, currentPlayerIndex } = useGame();
+  const { players, isPlaying, resetGame, currentChallenge } = useGame();
+  const [showAddPlayer, setShowAddPlayer] = useState(false);
 
   // Redirect if no players or not playing
   useEffect(() => {
@@ -23,52 +24,94 @@ const Game: React.FC = () => {
     navigate('/');
   };
 
-  const currentPlayer = players[currentPlayerIndex % players.length];
-
   if (!isPlaying) return null;
 
+  const isExtreme = currentChallenge?.isExtreme;
+
   return (
-    <div className="min-h-screen relative overflow-hidden px-6 py-8">
-      {/* Background Blobs */}
-      <Blob className="blob-1 opacity-30" delay={0} />
-      <Blob className="blob-2 opacity-30" delay={0.2} />
-
+    <motion.div 
+      className={`min-h-screen flex flex-col transition-colors duration-500 ${
+        isExtreme ? 'bg-extreme' : 'bg-background'
+      }`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
       {/* Header */}
-      <motion.div 
-        className="relative z-10 flex items-center justify-between max-w-lg mx-auto mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <button onClick={handleExit} className="btn-ghost-editorial -ml-4">
-          <ArrowLeft size={16} className="mr-2" />
-          Salir
-        </button>
+      <div className="relative z-20 pt-4 pb-2">
+        {/* Progress Bar */}
+        <ProgressBar />
 
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Users size={16} />
-          <span className="body-small">{players.length}</span>
+        {/* Controls */}
+        <div className="flex items-center justify-between px-4 mt-4">
+          <button 
+            onClick={handleExit} 
+            className={`p-2 transition-opacity hover:opacity-60 ${
+              isExtreme ? 'text-extreme-foreground' : 'text-foreground'
+            }`}
+            aria-label="Salir"
+          >
+            <X size={24} strokeWidth={1.5} />
+          </button>
+
+          <motion.h1 
+            className={`font-serif text-lg italic ${
+              isExtreme ? 'text-extreme-foreground' : 'text-foreground'
+            }`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            Bacachito
+          </motion.h1>
+
+          <button 
+            onClick={() => setShowAddPlayer(true)}
+            className={`p-2 transition-opacity hover:opacity-60 flex items-center gap-1 ${
+              isExtreme ? 'text-extreme-foreground' : 'text-foreground'
+            }`}
+            aria-label="Agregar jugador"
+          >
+            <Users size={18} strokeWidth={1.5} />
+            <span className="text-sm">{players.length}</span>
+          </button>
         </div>
-      </motion.div>
-
-      {/* Current Player Indicator */}
-      <motion.div
-        className="relative z-10 text-center mb-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        <p className="label-uppercase text-muted-foreground mb-1">Turno de</p>
-        <p className="heading-medium italic">{currentPlayer?.name}</p>
-      </motion.div>
-
-      {/* Challenge Card */}
-      <div className="relative z-10 flex justify-center">
-        <ChallengeCard />
       </div>
 
-      {/* Floating Add Button */}
-      <FloatingAddButton />
-    </div>
+      {/* Main Card Area */}
+      <div className="flex-1 flex items-center justify-center relative">
+        <StoryCard />
+      </div>
+
+      {/* Add Player Modal */}
+      <AnimatePresence>
+        {showAddPlayer && (
+          <motion.div
+            className="fixed inset-0 bg-background/95 z-50 flex items-center justify-center p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="w-full max-w-sm">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="heading-medium">Agregar</h2>
+                <button 
+                  onClick={() => setShowAddPlayer(false)}
+                  className="p-2 hover:opacity-60 transition-opacity"
+                >
+                  <X size={24} strokeWidth={1.5} />
+                </button>
+              </div>
+              <PlayerInput />
+              <button 
+                onClick={() => setShowAddPlayer(false)}
+                className="btn-editorial w-full mt-8"
+              >
+                Listo
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
