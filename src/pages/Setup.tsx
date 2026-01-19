@@ -7,7 +7,7 @@ import { useGame } from '@/context/GameContext';
 
 const Setup: React.FC = () => {
   const navigate = useNavigate();
-  const { players, startGame, isLoading, error } = useGame();
+  const { players, startGame, isLoading } = useGame();
 
   const handleStartGame = () => {
     startGame();
@@ -53,16 +53,6 @@ const Setup: React.FC = () => {
         >
           Agrega a los valientes que participarán esta noche.
         </motion.p>
-
-        {error && (
-          <motion.p
-            className="body-small text-muted-foreground mb-4 bg-secondary px-4 py-2 inline-block"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            {error}
-          </motion.p>
-        )}
 
         <PlayerInput />
 

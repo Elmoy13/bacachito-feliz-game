@@ -1,16 +1,11 @@
-export type ChallengeType = 'trivia' | 'pointing' | 'category' | 'archetype';
+export type ChallengeType = 'direct' | 'group' | 'category' | 'extreme' | 'vote' | 'random';
 
 export interface Challenge {
   id: string;
   type: ChallengeType;
-  title?: string;
-  question?: string;
-  answer?: string;
-  target?: string;
-  punishment?: string;
-  category?: string;
-  archetypeType?: 'youngest' | 'oldest' | 'random';
-  archetypeText?: string;
+  template: string; // Uses {player} for random player insertion
+  subtitle?: string;
+  isExtreme?: boolean;
 }
 
 export interface Player {
@@ -20,112 +15,202 @@ export interface Player {
 
 export interface GameState {
   players: Player[];
-  currentPlayerIndex: number;
-  currentChallenge: Challenge | null;
+  currentChallengeIndex: number;
+  challenges: Challenge[];
   isPlaying: boolean;
-  showAnswer: boolean;
-  countdownActive: boolean;
-  countdownValue: number;
 }
 
-// Fallback challenges in case Firebase fails
+// Retos locales - más directos y rápidos
 export const fallbackChallenges: Challenge[] = [
-  // Trivia (Cultura General)
+  // DIRECTOS - nombran a alguien
   {
-    id: 'trivia-1',
-    type: 'trivia',
-    title: 'Cultura General',
-    question: '¿Cuántos eran los Niños Héroes?',
-    answer: '6 (seis)',
-    punishment: 'Si contestas bien, reparte 3 tragos. Si no, fondo.'
+    id: 'd1',
+    type: 'direct',
+    template: '{player}, ¿cuál es la capital de Jalisco?',
+    subtitle: 'Bien: reparte 3. Mal: fondo.'
   },
   {
-    id: 'trivia-2',
-    type: 'trivia',
-    title: 'Cultura General',
-    question: '¿En qué año se independizó México?',
-    answer: '1821',
-    punishment: 'Aciertas: reparte 4 tragos. Fallas: te los tomas tú.'
+    id: 'd2',
+    type: 'direct',
+    template: '{player}, di 5 marcas de cerveza en 10 segundos.',
+    subtitle: 'Si fallas, te los tomas tú.'
   },
   {
-    id: 'trivia-3',
-    type: 'trivia',
-    title: 'Cultura General',
-    question: '¿Cuál es la capital de Jalisco?',
-    answer: 'Guadalajara',
-    punishment: 'Bien contestado: 2 tragos para el de tu derecha. Mal: fondo.'
-  },
-  // Pointing (Señalamiento)
-  {
-    id: 'pointing-1',
-    type: 'pointing',
-    title: 'A la cuenta de 3, señalen...',
-    target: '...al que le huelen las patas',
-    punishment: 'El más señalado se toma 2 shots. Ni modo.'
+    id: 'd3',
+    type: 'direct',
+    template: '{player}, ¿en qué año nació el Chavo del 8?',
+    subtitle: '1971. Aciertas: 4 tragos pa\' repartir.'
   },
   {
-    id: 'pointing-2',
-    type: 'pointing',
-    title: 'A la cuenta de 3, señalen...',
-    target: '...quien regresaría con su ex',
-    punishment: 'El señalado: fondo. Por intenso.'
+    id: 'd4',
+    type: 'direct',
+    template: '{player} escoge a alguien. Piedra, papel o tijera.',
+    subtitle: 'El perdedor: fondo.'
   },
   {
-    id: 'pointing-3',
-    type: 'pointing',
-    title: 'A la cuenta de 3, señalen...',
-    target: '...al más dramático del grupo',
-    punishment: 'El ganador se lleva 3 tragos de premio.'
+    id: 'd5',
+    type: 'direct',
+    template: '{player}, imita a alguien del grupo.',
+    subtitle: 'Si no adivinan quién es: 2 tragos para ti.'
   },
   {
-    id: 'pointing-4',
-    type: 'pointing',
-    title: 'A la cuenta de 3, señalen...',
-    target: '...a quien no debería manejar',
-    punishment: 'El señalado: 2 tragos. Y no agarre las llaves.'
+    id: 'd6',
+    type: 'direct',
+    template: '{player}, di el nombre completo de alguien aquí.',
+    subtitle: 'Si te equivocas: fondo, obviamente.'
   },
-  // Categories
+  
+  // GRUPALES - todos participan
   {
-    id: 'category-1',
+    id: 'g1',
+    type: 'group',
+    template: 'Todos señalen al más dramático.',
+    subtitle: 'El más señalado: 3 tragos.'
+  },
+  {
+    id: 'g2',
+    type: 'group',
+    template: 'El último en tocar su nariz toma.',
+    subtitle: '¡Ya! El lento paga.'
+  },
+  {
+    id: 'g3',
+    type: 'group',
+    template: 'Señalen a quien regresaría con su ex.',
+    subtitle: 'El ganador se lleva 2 shots.'
+  },
+  {
+    id: 'g4',
+    type: 'group',
+    template: 'El último en levantar la mano toma.',
+    subtitle: '¡Arriba las manos! Demasiado lento, compa.'
+  },
+  {
+    id: 'g5',
+    type: 'group',
+    template: 'Todos volteen a ver a alguien. Si dos se ven: beben ambos.',
+    subtitle: 'Tensión pura.'
+  },
+  
+  // CATEGORÍAS - rondas rápidas
+  {
+    id: 'c1',
     type: 'category',
-    title: 'Categorías',
-    category: 'Marcas de Cigarros',
-    punishment: 'El que falle: fondo. Gira a la derecha.'
+    template: 'Categoría: Equipos de la Liga MX',
+    subtitle: '{player} empieza. Gira a la derecha. El que falle: fondo.'
   },
   {
-    id: 'category-2',
+    id: 'c2',
     type: 'category',
-    title: 'Categorías',
-    category: 'Equipos de la Liga MX',
-    punishment: 'Fallar = 2 tragos. Repetir equipo = fondo.'
+    template: 'Categoría: Tipos de tacos',
+    subtitle: '{player} empieza. El que repita o falle: 2 tragos.'
   },
   {
-    id: 'category-3',
+    id: 'c3',
     type: 'category',
-    title: 'Categorías',
-    category: 'Tipos de Mezcal',
-    punishment: 'Quien pierda: shot de lo que haya.'
-  },
-  // Archetypes
-  {
-    id: 'archetype-1',
-    type: 'archetype',
-    archetypeType: 'youngest',
-    archetypeText: 'El jugador más joven se toma 3 tragos para que agarre callo.',
-    punishment: 'Es por tu bien, mijo.'
+    template: 'Categoría: Marcas de cigarro',
+    subtitle: 'Rápido. Sin pensar. {player} arranca.'
   },
   {
-    id: 'archetype-2',
-    type: 'archetype',
-    archetypeType: 'oldest',
-    archetypeText: 'El veterano del grupo se echa 5 tragos para enseñarles cómo se hace en la vieja escuela.',
-    punishment: 'Con experiencia viene responsabilidad... de beber más.'
+    id: 'c4',
+    type: 'category',
+    template: 'Categoría: Países de Sudamérica',
+    subtitle: '{player} inicia. Repetir = fondo.'
+  },
+  
+  // EXTREMOS - pantalla roja
+  {
+    id: 'e1',
+    type: 'extreme',
+    template: 'SOLO PORQUE SÍ',
+    subtitle: 'Los que traigan tenis: FONDO.',
+    isExtreme: true
   },
   {
-    id: 'archetype-3',
-    type: 'archetype',
-    archetypeType: 'random',
-    archetypeText: 'El de la voz más chillona toma 2.',
-    punishment: 'No te agüites, es con cariño.'
+    id: 'e2',
+    type: 'extreme',
+    template: 'RETO EXTREMO',
+    subtitle: 'El más chaparro del grupo se empina 3.',
+    isExtreme: true
+  },
+  {
+    id: 'e3',
+    type: 'extreme',
+    template: 'CASTIGO DIVINO',
+    subtitle: 'El que tenga el celular más viejo: fondo.',
+    isExtreme: true
+  },
+  {
+    id: 'e4',
+    type: 'extreme',
+    template: 'SIN RAZÓN APARENTE',
+    subtitle: 'Los solteros toman 2. Los que no, también.',
+    isExtreme: true
+  },
+  {
+    id: 'e5',
+    type: 'extreme',
+    template: 'LA VIDA ES INJUSTA',
+    subtitle: '{player} escoge a 3 personas. Todos toman.',
+    isExtreme: true
+  },
+  {
+    id: 'e6',
+    type: 'extreme',
+    template: 'PORQUE TE QUIERO',
+    subtitle: '{player}, tu mejor amigo aquí se toma 2 contigo.',
+    isExtreme: true
+  },
+  
+  // VOTACIONES RÁPIDAS
+  {
+    id: 'v1',
+    type: 'vote',
+    template: '¿Quién es el más intenso del grupo?',
+    subtitle: 'Señalen a la cuenta de 3. El ganador: 3 tragos.'
+  },
+  {
+    id: 'v2',
+    type: 'vote',
+    template: '¿Quién tiene peor gusto en música?',
+    subtitle: 'El elegido pone la siguiente rola... y toma 2.'
+  },
+  {
+    id: 'v3',
+    type: 'vote',
+    template: '¿Quién sería el peor roomie?',
+    subtitle: 'Señalen. El perdedor: fondo por cochino.'
+  },
+  
+  // RANDOM / WILD
+  {
+    id: 'r1',
+    type: 'random',
+    template: '{player}, tienes 2 opciones:',
+    subtitle: 'Cuenta un secreto vergonzoso O tómate 4 tragos.'
+  },
+  {
+    id: 'r2',
+    type: 'random',
+    template: 'Duelo: {player} vs {player2}',
+    subtitle: 'Vean quién aguanta más la mirada. El que se ría: fondo.'
+  },
+  {
+    id: 'r3',
+    type: 'random',
+    template: '{player}, manda un mensaje random a tu ex.',
+    subtitle: 'Si no lo haces: 5 tragos. Si sí: reparte 5.'
+  },
+  {
+    id: 'r4',
+    type: 'random',
+    template: 'Waterfall iniciado por {player}',
+    subtitle: 'Cuando empiece a tomar, todos toman. Solo para cuando pare.'
+  },
+  {
+    id: 'r5',
+    type: 'random',
+    template: '{player}, llama a tu mamá y dile que la quieres.',
+    subtitle: 'Si no contestas o no lo haces: FONDO.'
   }
 ];

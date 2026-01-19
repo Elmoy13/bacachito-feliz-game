@@ -1,18 +1,24 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { Player, Challenge, GameState, fallbackChallenges } from '@/types/game';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
+import { Player, Challenge, fallbackChallenges } from '@/types/game';
 import { db, collection, getDocs } from '@/lib/firebase';
 
-interface GameContextType extends GameState {
+interface GameContextType {
+  players: Player[];
+  currentChallengeIndex: number;
+  isPlaying: boolean;
+  shuffledChallenges: Challenge[];
+  currentChallenge: Challenge | null;
+  progress: number;
+  totalChallenges: number;
   addPlayer: (name: string) => void;
   removePlayer: (id: string) => void;
   startGame: () => void;
   nextChallenge: () => void;
-  revealAnswer: () => void;
-  startCountdown: () => void;
+  prevChallenge: () => void;
   resetGame: () => void;
-  challenges: Challenge[];
+  getRandomPlayer: () => Player | null;
+  getProcessedText: (template: string) => string;
   isLoading: boolean;
-  error: string | null;
 }
 
 const GameContext = createContext<GameContextType | null>(null);
@@ -25,18 +31,23 @@ export const useGame = () => {
   return context;
 };
 
+// Fisher-Yates shuffle
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [players, setPlayers] = useState<Player[]>([]);
-  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-  const [currentChallenge, setCurrentChallenge] = useState<Challenge | null>(null);
+  const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [countdownActive, setCountdownActive] = useState(false);
-  const [countdownValue, setCountdownValue] = useState(3);
   const [challenges, setChallenges] = useState<Challenge[]>(fallbackChallenges);
-  const [usedChallenges, setUsedChallenges] = useState<Set<string>>(new Set());
+  const [shuffledChallenges, setShuffledChallenges] = useState<Challenge[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Fetch challenges from Firebase
   useEffect(() => {
@@ -51,15 +62,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (firebaseChallenges.length > 0) {
           setChallenges(firebaseChallenges);
-          setError(null);
-        } else {
-          // Use fallback if no challenges in Firebase
-          setChallenges(fallbackChallenges);
         }
       } catch (err) {
-        console.warn('Firebase connection failed, using local challenges:', err);
-        setChallenges(fallbackChallenges);
-        setError('Modo offline: usando retos locales');
+        console.warn('Using local challenges:', err);
       } finally {
         setIsLoading(false);
       }
@@ -79,100 +84,87 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setPlayers(prev => prev.filter(p => p.id !== id));
   }, []);
 
-  const getRandomChallenge = useCallback((): Challenge => {
-    // Get available challenges (not used yet)
-    let available = challenges.filter(c => !usedChallenges.has(c.id));
-    
-    // If all challenges used, reset
-    if (available.length === 0) {
-      setUsedChallenges(new Set());
-      available = challenges;
-    }
-
-    // Pick random challenge
-    const randomIndex = Math.floor(Math.random() * available.length);
-    const selected = available[randomIndex];
-    
-    // Mark as used
-    setUsedChallenges(prev => new Set([...prev, selected.id]));
-    
-    return selected;
-  }, [challenges, usedChallenges]);
-
-  const getCurrentPlayer = useCallback((): Player | null => {
+  const getRandomPlayer = useCallback((): Player | null => {
     if (players.length === 0) return null;
-    return players[currentPlayerIndex % players.length];
-  }, [players, currentPlayerIndex]);
+    return players[Math.floor(Math.random() * players.length)];
+  }, [players]);
+
+  const getProcessedText = useCallback((template: string): string => {
+    let text = template;
+    
+    // Replace {player} with random player name
+    while (text.includes('{player}')) {
+      const player = getRandomPlayer();
+      text = text.replace('{player}', player?.name || 'Alguien');
+    }
+    
+    // Replace {player2} with different random player
+    if (text.includes('{player2}')) {
+      const player = getRandomPlayer();
+      text = text.replace('{player2}', player?.name || 'Otro');
+    }
+    
+    return text;
+  }, [getRandomPlayer]);
 
   const startGame = useCallback(() => {
     if (players.length >= 2) {
+      // Shuffle challenges for this session
+      const shuffled = shuffleArray(challenges);
+      setShuffledChallenges(shuffled);
+      setCurrentChallengeIndex(0);
       setIsPlaying(true);
-      setUsedChallenges(new Set());
-      const challenge = getRandomChallenge();
-      setCurrentChallenge(challenge);
-      setCurrentPlayerIndex(Math.floor(Math.random() * players.length));
     }
-  }, [players, getRandomChallenge]);
+  }, [players, challenges]);
 
   const nextChallenge = useCallback(() => {
-    setShowAnswer(false);
-    setCountdownActive(false);
-    setCountdownValue(3);
-    const challenge = getRandomChallenge();
-    setCurrentChallenge(challenge);
-    setCurrentPlayerIndex(prev => (prev + 1) % players.length);
-  }, [getRandomChallenge, players.length]);
+    setCurrentChallengeIndex(prev => {
+      if (prev >= shuffledChallenges.length - 1) {
+        // Reshuffle when we reach the end
+        setShuffledChallenges(shuffleArray(challenges));
+        return 0;
+      }
+      return prev + 1;
+    });
+  }, [shuffledChallenges.length, challenges]);
 
-  const revealAnswer = useCallback(() => {
-    setShowAnswer(true);
-  }, []);
-
-  const startCountdown = useCallback(() => {
-    setCountdownActive(true);
-    setCountdownValue(3);
-    
-    const interval = setInterval(() => {
-      setCountdownValue(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setCountdownActive(false);
-          }, 800);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  const prevChallenge = useCallback(() => {
+    setCurrentChallengeIndex(prev => Math.max(0, prev - 1));
   }, []);
 
   const resetGame = useCallback(() => {
     setIsPlaying(false);
-    setCurrentChallenge(null);
-    setShowAnswer(false);
-    setCountdownActive(false);
-    setCountdownValue(3);
-    setUsedChallenges(new Set());
-    setCurrentPlayerIndex(0);
+    setCurrentChallengeIndex(0);
+    setShuffledChallenges([]);
   }, []);
+
+  const currentChallenge = useMemo(() => {
+    if (shuffledChallenges.length === 0) return null;
+    return shuffledChallenges[currentChallengeIndex] || null;
+  }, [shuffledChallenges, currentChallengeIndex]);
+
+  const progress = useMemo(() => {
+    if (shuffledChallenges.length === 0) return 0;
+    return ((currentChallengeIndex + 1) / shuffledChallenges.length) * 100;
+  }, [currentChallengeIndex, shuffledChallenges.length]);
 
   const value: GameContextType = {
     players,
-    currentPlayerIndex,
-    currentChallenge,
+    currentChallengeIndex,
     isPlaying,
-    showAnswer,
-    countdownActive,
-    countdownValue,
-    challenges,
-    isLoading,
-    error,
+    shuffledChallenges,
+    currentChallenge,
+    progress,
+    totalChallenges: shuffledChallenges.length,
     addPlayer,
     removePlayer,
     startGame,
     nextChallenge,
-    revealAnswer,
-    startCountdown,
+    prevChallenge,
     resetGame,
+    getRandomPlayer,
+    getProcessedText,
+    isLoading,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
