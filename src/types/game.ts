@@ -1,4 +1,4 @@
-export type ChallengeType = 'direct' | 'group' | 'category' | 'extreme' | 'vote' | 'random';
+export type ChallengeType = 'direct' | 'group' | 'category' | 'extreme' | 'vote' | 'random' | 'timed';
 
 export interface Challenge {
   id: string;
@@ -6,6 +6,7 @@ export interface Challenge {
   template: string; // Uses {player} for random player insertion
   subtitle?: string;
   isExtreme?: boolean;
+  duration?: number; // Duration in seconds for timed challenges
 }
 
 export interface Player {

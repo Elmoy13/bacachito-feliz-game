@@ -63,18 +63,8 @@ const Game: React.FC = () => {
             <X size={24} strokeWidth={2} />
           </button>
 
-          {/* Card Counter */}
-          <motion.div 
-            className={`px-4 py-2 rounded-full text-sm font-semibold ${
-              isExtreme 
-                ? 'bg-extreme-foreground/20 text-extreme-foreground' 
-                : 'bg-background text-foreground shadow-md'
-            }`}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-          >
-            {currentChallengeIndex + 1} / {totalChallenges}
-          </motion.div>
+          {/* Center spacer */}
+          <div className="w-10" />
 
           <button 
             onClick={() => setShowAddPlayer(true)}
