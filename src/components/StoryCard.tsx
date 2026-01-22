@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useGame } from '@/context/GameContext';
 
@@ -31,7 +31,7 @@ const StoryCard: React.FC = () => {
     const x = e.clientX - rect.left;
     const width = rect.width;
 
-    if (x < width * 0.3) {
+    if (x < width * 0.25) {
       setDirection(-1);
       prevChallenge();
     } else {
@@ -81,7 +81,7 @@ const StoryCard: React.FC = () => {
 
   return (
     <div 
-      className="w-full h-full flex items-center justify-center cursor-pointer select-none"
+      className="w-full h-full flex items-center justify-center cursor-pointer select-none px-4"
       onClick={handleTap}
       onKeyDown={handleKeyDown}
       tabIndex={0}
@@ -98,45 +98,40 @@ const StoryCard: React.FC = () => {
           exit="exit"
           transition={{ 
             type: 'spring', 
-            stiffness: 500, 
-            damping: 35,
+            stiffness: 400, 
+            damping: 30,
             mass: 0.8
           }}
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.2}
+          dragElastic={0.15}
           onDragEnd={handleDragEnd}
           className={`
-            w-full max-w-lg mx-4 p-8 sm:p-12 
-            flex flex-col items-center justify-center text-center
-            min-h-[60vh] sm:min-h-[500px]
+            card-game
             ${isExtreme 
               ? 'bg-extreme text-extreme-foreground' 
-              : 'bg-card text-card-foreground shadow-card'
+              : ''
             }
           `}
         >
-          {/* Challenge Type Label */}
-          <motion.span
-            className={`label-uppercase mb-6 ${isExtreme ? 'text-extreme-foreground/70' : 'text-muted-foreground'}`}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            {currentChallenge.type === 'direct' && 'Directo'}
-            {currentChallenge.type === 'group' && 'Todos'}
-            {currentChallenge.type === 'category' && 'Categoría'}
-            {currentChallenge.type === 'extreme' && '🔥 Extremo'}
-            {currentChallenge.type === 'vote' && 'Votación'}
-            {currentChallenge.type === 'random' && 'Random'}
-          </motion.span>
+          {/* Emoji for extreme */}
+          {isExtreme && (
+            <motion.span
+              className="text-5xl mb-6"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', delay: 0.1 }}
+            >
+              🔥
+            </motion.span>
+          )}
 
           {/* Main Challenge Text */}
           <motion.h2
-            className={`heading-card mb-8 ${isExtreme ? 'text-extreme-foreground' : ''}`}
+            className="heading-card mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
+            transition={{ delay: 0.1 }}
           >
             {processedContent.title}
           </motion.h2>
@@ -144,28 +139,16 @@ const StoryCard: React.FC = () => {
           {/* Subtitle / Instructions */}
           {processedContent.subtitle && (
             <motion.p
-              className={`body-elegant max-w-sm ${isExtreme ? 'text-extreme-foreground/80' : 'text-muted-foreground'}`}
+              className={`body-large max-w-sm ${isExtreme ? 'text-extreme-foreground/90' : 'text-muted-foreground'}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
+              transition={{ delay: 0.2 }}
             >
               {processedContent.subtitle}
             </motion.p>
           )}
         </motion.div>
       </AnimatePresence>
-
-      {/* Tap Hints */}
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center pointer-events-none">
-        <motion.p 
-          className="body-small text-muted-foreground/50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-        >
-          toca para continuar →
-        </motion.p>
-      </div>
     </div>
   );
 };

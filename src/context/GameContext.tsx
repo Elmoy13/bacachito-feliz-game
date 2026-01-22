@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
-import { Player, Challenge, fallbackChallenges } from '@/types/game';
-import { db, collection, getDocs } from '@/lib/firebase';
+import React, { createContext, useContext, useState, useCallback, useMemo, useRef } from 'react';
+import { Player, Challenge } from '@/types/game';
+import { gameModes, getChallengesByMode, GameMode } from '@/data/challenges';
 
 interface GameContextType {
   players: Player[];
@@ -8,17 +8,18 @@ interface GameContextType {
   isPlaying: boolean;
   shuffledChallenges: Challenge[];
   currentChallenge: Challenge | null;
-  progress: number;
   totalChallenges: number;
+  isGameOver: boolean;
+  selectedMode: GameMode | null;
+  gameModes: GameMode[];
   addPlayer: (name: string) => void;
   removePlayer: (id: string) => void;
+  selectMode: (modeId: string) => void;
   startGame: () => void;
   nextChallenge: () => void;
   prevChallenge: () => void;
   resetGame: () => void;
-  getRandomPlayer: () => Player | null;
   getProcessedText: (template: string) => string;
-  isLoading: boolean;
 }
 
 const GameContext = createContext<GameContextType | null>(null);
@@ -45,33 +46,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [players, setPlayers] = useState<Player[]>([]);
   const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [challenges, setChallenges] = useState<Challenge[]>(fallbackChallenges);
   const [shuffledChallenges, setShuffledChallenges] = useState<Challenge[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Fetch challenges from Firebase
-  useEffect(() => {
-    const fetchChallenges = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'challenges'));
-        const firebaseChallenges: Challenge[] = [];
-        
-        querySnapshot.forEach((doc) => {
-          firebaseChallenges.push({ id: doc.id, ...doc.data() } as Challenge);
-        });
-
-        if (firebaseChallenges.length > 0) {
-          setChallenges(firebaseChallenges);
-        }
-      } catch (err) {
-        console.warn('Using local challenges:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchChallenges();
-  }, []);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [selectedMode, setSelectedMode] = useState<GameMode | null>(null);
+  
+  // Keep track of used player combinations to avoid repeats
+  const usedPlayersRef = useRef<Set<string>>(new Set());
 
   const addPlayer = useCallback((name: string) => {
     const trimmedName = name.trim();
@@ -84,69 +64,87 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setPlayers(prev => prev.filter(p => p.id !== id));
   }, []);
 
-  const getRandomPlayer = useCallback((): Player | null => {
-    if (players.length === 0) return null;
-    return players[Math.floor(Math.random() * players.length)];
-  }, [players]);
+  const selectMode = useCallback((modeId: string) => {
+    const mode = gameModes.find(m => m.id === modeId);
+    setSelectedMode(mode || null);
+  }, []);
 
-  const getProcessedText = useCallback((template: string): string => {
-    let text = template;
+  // Get a random player that hasn't been used recently, avoiding duplicates
+  const getRandomPlayer = useCallback((excludeNames: string[] = []): Player | null => {
+    if (players.length === 0) return null;
     
-    // Replace {player} with random player name
-    while (text.includes('{player}')) {
-      const player = getRandomPlayer();
-      text = text.replace('{player}', player?.name || 'Alguien');
+    const availablePlayers = players.filter(p => !excludeNames.includes(p.name));
+    
+    if (availablePlayers.length === 0) {
+      // If all players are excluded, just return a random one
+      return players[Math.floor(Math.random() * players.length)];
     }
     
-    // Replace {player2} with different random player
+    return availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
+  }, [players]);
+
+  // Process text with player names - ensures {player} and {player2} are different
+  const getProcessedText = useCallback((template: string): string => {
+    let text = template;
+    const usedNames: string[] = [];
+    
+    // Replace all {player} instances with different random players
+    while (text.includes('{player}')) {
+      const player = getRandomPlayer(usedNames);
+      const name = player?.name || 'Alguien';
+      usedNames.push(name);
+      text = text.replace('{player}', name);
+    }
+    
+    // Replace {player2} with a different player than those already used
     if (text.includes('{player2}')) {
-      const player = getRandomPlayer();
-      text = text.replace('{player2}', player?.name || 'Otro');
+      const player2 = getRandomPlayer(usedNames);
+      text = text.replace('{player2}', player2?.name || 'Otro');
     }
     
     return text;
   }, [getRandomPlayer]);
 
   const startGame = useCallback(() => {
-    if (players.length >= 2) {
-      // Shuffle challenges for this session
+    if (players.length >= 2 && selectedMode) {
+      const challenges = getChallengesByMode(selectedMode.id);
       const shuffled = shuffleArray(challenges);
       setShuffledChallenges(shuffled);
       setCurrentChallengeIndex(0);
       setIsPlaying(true);
+      setIsGameOver(false);
+      usedPlayersRef.current.clear();
     }
-  }, [players, challenges]);
+  }, [players, selectedMode]);
 
   const nextChallenge = useCallback(() => {
-    setCurrentChallengeIndex(prev => {
-      if (prev >= shuffledChallenges.length - 1) {
-        // Reshuffle when we reach the end
-        setShuffledChallenges(shuffleArray(challenges));
-        return 0;
-      }
-      return prev + 1;
-    });
-  }, [shuffledChallenges.length, challenges]);
+    if (currentChallengeIndex >= shuffledChallenges.length - 1) {
+      setIsGameOver(true);
+    } else {
+      setCurrentChallengeIndex(prev => prev + 1);
+    }
+  }, [currentChallengeIndex, shuffledChallenges.length]);
 
   const prevChallenge = useCallback(() => {
-    setCurrentChallengeIndex(prev => Math.max(0, prev - 1));
-  }, []);
+    if (isGameOver) {
+      setIsGameOver(false);
+    } else {
+      setCurrentChallengeIndex(prev => Math.max(0, prev - 1));
+    }
+  }, [isGameOver]);
 
   const resetGame = useCallback(() => {
     setIsPlaying(false);
     setCurrentChallengeIndex(0);
     setShuffledChallenges([]);
+    setIsGameOver(false);
+    usedPlayersRef.current.clear();
   }, []);
 
   const currentChallenge = useMemo(() => {
-    if (shuffledChallenges.length === 0) return null;
+    if (shuffledChallenges.length === 0 || isGameOver) return null;
     return shuffledChallenges[currentChallengeIndex] || null;
-  }, [shuffledChallenges, currentChallengeIndex]);
-
-  const progress = useMemo(() => {
-    if (shuffledChallenges.length === 0) return 0;
-    return ((currentChallengeIndex + 1) / shuffledChallenges.length) * 100;
-  }, [currentChallengeIndex, shuffledChallenges.length]);
+  }, [shuffledChallenges, currentChallengeIndex, isGameOver]);
 
   const value: GameContextType = {
     players,
@@ -154,17 +152,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isPlaying,
     shuffledChallenges,
     currentChallenge,
-    progress,
     totalChallenges: shuffledChallenges.length,
+    isGameOver,
+    selectedMode,
+    gameModes,
     addPlayer,
     removePlayer,
+    selectMode,
     startGame,
     nextChallenge,
     prevChallenge,
     resetGame,
-    getRandomPlayer,
     getProcessedText,
-    isLoading,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

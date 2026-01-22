@@ -1,15 +1,24 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { X, Plus, Users } from 'lucide-react';
+import { X, Users, RotateCcw, Trophy } from 'lucide-react';
 import StoryCard from '@/components/StoryCard';
-import ProgressBar from '@/components/ProgressBar';
 import PlayerInput from '@/components/PlayerInput';
 import { useGame } from '@/context/GameContext';
 
 const Game: React.FC = () => {
   const navigate = useNavigate();
-  const { players, isPlaying, resetGame, currentChallenge } = useGame();
+  const { 
+    players, 
+    isPlaying, 
+    resetGame, 
+    currentChallenge, 
+    isGameOver,
+    currentChallengeIndex,
+    totalChallenges,
+    selectedMode,
+    prevChallenge
+  } = useGame();
   const [showAddPlayer, setShowAddPlayer] = useState(false);
 
   // Redirect if no players or not playing
@@ -24,6 +33,11 @@ const Game: React.FC = () => {
     navigate('/');
   };
 
+  const handlePlayAgain = () => {
+    resetGame();
+    navigate('/setup');
+  };
+
   if (!isPlaying) return null;
 
   const isExtreme = currentChallenge?.isExtreme;
@@ -31,79 +45,122 @@ const Game: React.FC = () => {
   return (
     <motion.div 
       className={`min-h-screen flex flex-col transition-colors duration-500 ${
-        isExtreme ? 'bg-extreme' : 'bg-background'
+        isExtreme ? 'bg-extreme' : 'bg-muted/30'
       }`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
       {/* Header */}
-      <div className="relative z-20 pt-4 pb-2">
-        {/* Progress Bar */}
-        <ProgressBar />
-
-        {/* Controls */}
-        <div className="flex items-center justify-between px-4 mt-4">
+      <div className="relative z-20 pt-6 pb-2 px-4">
+        <div className="flex items-center justify-between max-w-md mx-auto">
           <button 
             onClick={handleExit} 
-            className={`p-2 transition-opacity hover:opacity-60 ${
+            className={`p-2 rounded-xl transition-all hover:bg-background/10 ${
               isExtreme ? 'text-extreme-foreground' : 'text-foreground'
             }`}
             aria-label="Salir"
           >
-            <X size={24} strokeWidth={1.5} />
+            <X size={24} strokeWidth={2} />
           </button>
 
-          <motion.h1 
-            className={`font-serif text-lg italic ${
-              isExtreme ? 'text-extreme-foreground' : 'text-foreground'
+          {/* Card Counter */}
+          <motion.div 
+            className={`px-4 py-2 rounded-full text-sm font-semibold ${
+              isExtreme 
+                ? 'bg-extreme-foreground/20 text-extreme-foreground' 
+                : 'bg-background text-foreground shadow-md'
             }`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
           >
-            Bacachito
-          </motion.h1>
+            {currentChallengeIndex + 1} / {totalChallenges}
+          </motion.div>
 
           <button 
             onClick={() => setShowAddPlayer(true)}
-            className={`p-2 transition-opacity hover:opacity-60 flex items-center gap-1 ${
+            className={`p-2 rounded-xl transition-all hover:bg-background/10 flex items-center gap-1.5 ${
               isExtreme ? 'text-extreme-foreground' : 'text-foreground'
             }`}
             aria-label="Agregar jugador"
           >
-            <Users size={18} strokeWidth={1.5} />
-            <span className="text-sm">{players.length}</span>
+            <Users size={20} strokeWidth={2} />
+            <span className="font-semibold">{players.length}</span>
           </button>
         </div>
       </div>
 
       {/* Main Card Area */}
-      <div className="flex-1 flex items-center justify-center relative">
-        <StoryCard />
+      <div className="flex-1 flex items-center justify-center relative py-4">
+        {isGameOver ? (
+          // Game Over Screen
+          <motion.div
+            className="card-gameover max-w-sm mx-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <Trophy size={64} className="mx-auto mb-6 opacity-90" />
+            <h2 className="heading-large mb-3">¡Se acabó!</h2>
+            <p className="body-large opacity-90 mb-8">
+              {totalChallenges} retos completados con {players.length} valientes.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handlePlayAgain}
+                className="btn-secondary text-primary"
+              >
+                <RotateCcw size={18} className="mr-2" />
+                Jugar otra vez
+              </button>
+              <button
+                onClick={() => prevChallenge()}
+                className="btn-ghost text-primary-foreground/80"
+              >
+                Ver cartas anteriores
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <StoryCard />
+        )}
       </div>
+
+      {/* Tap hint */}
+      {!isGameOver && (
+        <motion.div 
+          className="pb-8 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+        >
+          <p className={`body-small ${isExtreme ? 'text-extreme-foreground/60' : 'text-muted-foreground'}`}>
+            toca para continuar →
+          </p>
+        </motion.div>
+      )}
 
       {/* Add Player Modal */}
       <AnimatePresence>
         {showAddPlayer && (
           <motion.div
-            className="fixed inset-0 bg-background/95 z-50 flex items-center justify-center p-6"
+            className="fixed inset-0 bg-background z-50 flex items-center justify-center p-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <div className="w-full max-w-sm">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="heading-medium">Agregar</h2>
+                <h2 className="heading-medium">Agregar jugador</h2>
                 <button 
                   onClick={() => setShowAddPlayer(false)}
-                  className="p-2 hover:opacity-60 transition-opacity"
+                  className="p-2 rounded-xl hover:bg-secondary transition-colors"
                 >
-                  <X size={24} strokeWidth={1.5} />
+                  <X size={24} strokeWidth={2} />
                 </button>
               </div>
               <PlayerInput />
               <button 
                 onClick={() => setShowAddPlayer(false)}
-                className="btn-editorial w-full mt-8"
+                className="btn-primary w-full mt-8"
               >
                 Listo
               </button>
