@@ -145,7 +145,7 @@
   }
 
   .card-game {
-    @apply bg-card rounded-3xl min-h-[400px] sm:min-h-[480px] w-full max-w-md flex flex-col items-center justify-center p-8 sm:p-10 text-center;
+    @apply bg-card rounded-3xl min-h-[450px] sm:min-h-[520px] w-full max-w-md flex flex-col items-center justify-center p-8 sm:p-12 text-center relative overflow-hidden;
     box-shadow: var(--shadow-2xl);
   }
 
