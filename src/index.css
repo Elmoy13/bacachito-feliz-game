@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,84 +6,84 @@
 
 @layer base {
   :root {
-    /* Editorial Minimalist Palette */
-    --background: 0 0% 98%;
-    --foreground: 0 0% 5%;
+    /* Clean Modern SaaS Palette */
+    --background: 0 0% 100%;
+    --foreground: 220 20% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 5%;
+    --card-foreground: 220 20% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 5%;
+    --popover-foreground: 220 20% 10%;
 
-    --primary: 0 0% 5%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 92%;
-    --secondary-foreground: 0 0% 15%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 20% 20%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 50%;
 
-    --accent: 0 0% 90%;
-    --accent-foreground: 0 0% 5%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 20% 10%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Vibrant Accent Colors */
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
 
     /* EXTREME - Red for intense challenges */
-    --extreme: 0 85% 45%;
+    --extreme: 0 85% 50%;
     --extreme-foreground: 0 0% 100%;
 
-    --border: 0 0% 88%;
-    --input: 0 0% 88%;
-    --ring: 0 0% 5%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 221 83% 53%;
 
-    --radius: 0rem;
-
-    /* Custom Editorial Variables */
-    --blob-color: 0 0% 5%;
-    --blob-opacity: 0.08;
-    --transition-elegant: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius: 1rem;
 
     /* Typography */
-    --font-serif: 'Playfair Display', Georgia, serif;
-    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
-    /* Shadows */
-    --shadow-card: 0 4px 60px -12px hsla(0, 0%, 0%, 0.12);
-    --shadow-elevated: 0 25px 80px -20px hsla(0, 0%, 0%, 0.18);
+    /* Modern Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.15);
   }
 
   .dark {
-    --background: 0 0% 5%;
+    --background: 220 20% 7%;
     --foreground: 0 0% 95%;
 
-    --card: 0 0% 8%;
+    --card: 220 20% 10%;
     --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 8%;
+    --popover: 220 20% 10%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 0 0% 95%;
-    --primary-foreground: 0 0% 5%;
+    --primary: 221 83% 60%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 15%;
+    --secondary: 220 20% 15%;
     --secondary-foreground: 0 0% 90%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 55%;
+    --muted: 220 20% 15%;
+    --muted-foreground: 220 10% 55%;
 
-    --accent: 0 0% 18%;
+    --accent: 220 20% 18%;
     --accent-foreground: 0 0% 95%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 0 0% 95%;
-
-    --blob-color: 0 0% 95%;
-    --blob-opacity: 0.06;
+    --border: 220 20% 18%;
+    --input: 220 20% 18%;
+    --ring: 221 83% 60%;
   }
 }
 
@@ -99,163 +99,132 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-serif);
-    letter-spacing: -0.02em;
+    font-family: var(--font-sans);
+    @apply font-bold tracking-tight;
   }
 }
 
 @layer components {
-  /* Editorial Typography */
+  /* Modern Typography */
   .heading-display {
-    font-family: var(--font-serif);
-    @apply text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-medium tracking-tight leading-none;
+    @apply text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight;
   }
 
   .heading-large {
-    font-family: var(--font-serif);
-    @apply text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight leading-tight;
+    @apply text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight;
   }
 
   .heading-medium {
-    font-family: var(--font-serif);
-    @apply text-2xl sm:text-3xl font-medium tracking-tight;
+    @apply text-xl sm:text-2xl font-bold tracking-tight;
   }
 
-  /* Card heading - bigger and bolder for stories */
   .heading-card {
-    font-family: var(--font-serif);
-    @apply text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight leading-tight;
+    @apply text-xl sm:text-2xl md:text-3xl font-bold tracking-tight leading-snug;
   }
 
-  .body-elegant {
-    font-family: var(--font-sans);
-    @apply text-base sm:text-lg font-light tracking-wide leading-relaxed;
+  .body-large {
+    @apply text-base sm:text-lg font-normal leading-relaxed;
+  }
+
+  .body-regular {
+    @apply text-sm sm:text-base font-normal leading-relaxed;
   }
 
   .body-small {
-    font-family: var(--font-sans);
-    @apply text-sm font-normal tracking-wide;
+    @apply text-xs sm:text-sm font-medium;
   }
 
   .label-uppercase {
-    font-family: var(--font-sans);
-    @apply text-xs uppercase tracking-[0.2em] font-medium;
+    @apply text-xs uppercase tracking-widest font-semibold;
   }
 
-  /* Organic Blob Shapes */
-  .blob {
-    position: absolute;
-    background: hsl(var(--blob-color) / var(--blob-opacity));
-    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-    animation: blob-morph 15s ease-in-out infinite;
-  }
-
-  .blob-1 {
-    width: 400px;
-    height: 400px;
-    top: -100px;
-    right: -100px;
-  }
-
-  .blob-2 {
-    width: 300px;
-    height: 300px;
-    bottom: -50px;
-    left: -80px;
-    animation-delay: -5s;
-    border-radius: 40% 60% 70% 30% / 40% 50% 50% 60%;
-  }
-
-  .blob-3 {
-    width: 200px;
-    height: 200px;
-    top: 40%;
-    left: 10%;
-    animation-delay: -10s;
-    border-radius: 50% 50% 40% 60% / 60% 40% 60% 40%;
-  }
-
-  /* Card Styles */
-  .card-editorial {
-    @apply bg-card relative overflow-hidden;
-    box-shadow: var(--shadow-card);
-    transition: transform var(--transition-elegant), box-shadow var(--transition-elegant);
-  }
-
-  .card-editorial:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-elevated);
+  /* Modern Card Styles */
+  .card-modern {
+    @apply bg-card rounded-3xl p-6 sm:p-8;
+    box-shadow: var(--shadow-xl);
   }
 
   .card-game {
-    @apply bg-card min-h-[400px] sm:min-h-[500px] w-full max-w-lg flex flex-col items-center justify-center p-8 sm:p-12 text-center relative;
-    box-shadow: var(--shadow-elevated);
+    @apply bg-card rounded-3xl min-h-[400px] sm:min-h-[480px] w-full max-w-md flex flex-col items-center justify-center p-8 sm:p-10 text-center;
+    box-shadow: var(--shadow-2xl);
   }
 
-  /* Button Variants */
-  .btn-editorial {
-    @apply inline-flex items-center justify-center px-8 py-4 bg-primary text-primary-foreground transition-all duration-300;
-    font-family: var(--font-sans);
-    @apply text-sm uppercase tracking-[0.15em] font-medium;
+  .card-mode {
+    @apply bg-card rounded-2xl p-5 cursor-pointer transition-all duration-300 border-2 border-transparent;
+    box-shadow: var(--shadow-md);
   }
 
-  .btn-editorial:hover {
-    @apply opacity-80;
+  .card-mode:hover {
+    @apply border-primary/30;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+
+  .card-mode.selected {
+    @apply border-primary bg-primary/5;
+  }
+
+  /* Modern Button Styles */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3.5 bg-primary text-primary-foreground rounded-2xl font-semibold text-sm transition-all duration-200;
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-primary:hover {
+    @apply opacity-90;
     transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
   }
 
-  .btn-outline-editorial {
-    @apply inline-flex items-center justify-center px-8 py-4 border border-foreground bg-transparent text-foreground transition-all duration-300;
-    font-family: var(--font-sans);
-    @apply text-sm uppercase tracking-[0.15em] font-medium;
+  .btn-primary:active {
+    transform: translateY(0);
   }
 
-  .btn-outline-editorial:hover {
-    @apply bg-foreground text-background;
+  .btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed;
+    transform: none;
   }
 
-  .btn-ghost-editorial {
-    @apply inline-flex items-center justify-center px-4 py-2 bg-transparent text-foreground transition-all duration-300;
-    font-family: var(--font-sans);
-    @apply text-sm tracking-wide font-normal underline underline-offset-4 decoration-1;
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3.5 bg-secondary text-secondary-foreground rounded-2xl font-semibold text-sm transition-all duration-200;
   }
 
-  .btn-ghost-editorial:hover {
-    @apply opacity-60;
+  .btn-secondary:hover {
+    @apply bg-secondary/80;
   }
 
-  /* Floating Action Button */
-  .fab-editorial {
-    @apply fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg transition-all duration-300 z-50;
+  .btn-ghost {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-transparent text-muted-foreground rounded-xl font-medium text-sm transition-all duration-200;
   }
 
-  .fab-editorial:hover {
-    transform: scale(1.05);
-    @apply shadow-xl;
+  .btn-ghost:hover {
+    @apply bg-secondary text-foreground;
   }
 
-  /* Input Styles */
-  .input-editorial {
-    @apply w-full px-0 py-4 bg-transparent border-0 border-b-2 border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors duration-300;
-    font-family: var(--font-sans);
-    @apply text-lg font-light;
-  }
-
-  /* Countdown */
-  .countdown-number {
-    font-family: var(--font-serif);
-    @apply text-[12rem] sm:text-[16rem] md:text-[20rem] font-bold leading-none tracking-tighter;
+  /* Modern Input Styles */
+  .input-modern {
+    @apply w-full px-4 py-3.5 bg-secondary/50 border-2 border-transparent rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:bg-background transition-all duration-200;
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 
   /* Player Tag */
   .player-tag {
-    @apply inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground transition-all duration-200;
-    font-family: var(--font-sans);
-    @apply text-sm font-medium;
+    @apply inline-flex items-center gap-2 px-4 py-2.5 bg-secondary text-secondary-foreground rounded-xl transition-all duration-200 font-medium text-sm;
   }
 
   .player-tag:hover {
-    @apply bg-muted;
+    @apply bg-secondary/70;
+  }
+
+  /* Mode Card Emoji */
+  .mode-emoji {
+    @apply text-4xl mb-3 block;
+  }
+
+  /* Game Over Card */
+  .card-gameover {
+    @apply bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-3xl p-10 text-center;
+    box-shadow: var(--shadow-2xl);
   }
 }
 
@@ -265,38 +234,19 @@
   }
 
   .animate-fade-in {
-    animation: fade-in 0.6s ease-out forwards;
+    animation: fade-in 0.4s ease-out forwards;
   }
 
   .animate-fade-in-up {
-    animation: fade-in-up 0.8s ease-out forwards;
+    animation: fade-in-up 0.5s ease-out forwards;
   }
 
-  .animate-fade-in-slow {
-    animation: fade-in 1.2s ease-out forwards;
+  .animate-scale-in {
+    animation: scale-in 0.3s ease-out forwards;
   }
 
-  .delay-100 { animation-delay: 100ms; }
-  .delay-200 { animation-delay: 200ms; }
-  .delay-300 { animation-delay: 300ms; }
-  .delay-400 { animation-delay: 400ms; }
-  .delay-500 { animation-delay: 500ms; }
-}
-
-@keyframes blob-morph {
-  0%, 100% {
-    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-    transform: rotate(0deg) scale(1);
-  }
-  25% {
-    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
-  }
-  50% {
-    border-radius: 50% 60% 30% 60% / 30% 50% 70% 50%;
-    transform: rotate(180deg) scale(1.05);
-  }
-  75% {
-    border-radius: 60% 40% 60% 30% / 70% 30% 50% 60%;
+  .animate-bounce-soft {
+    animation: bounce-soft 2s ease-in-out infinite;
   }
 }
 
@@ -312,10 +262,30 @@
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce-soft {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
   }
 }
