@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { X, Users, RotateCcw, Trophy } from 'lucide-react';
+import { X, Users, Plus, RotateCcw, Trophy } from 'lucide-react';
 import StoryCard from '@/components/StoryCard';
 import PlayerInput from '@/components/PlayerInput';
 import { useGame } from '@/context/GameContext';
@@ -14,9 +14,7 @@ const Game: React.FC = () => {
     resetGame, 
     currentChallenge, 
     isGameOver,
-    currentChallengeIndex,
     totalChallenges,
-    selectedMode,
     prevChallenge
   } = useGame();
   const [showAddPlayer, setShowAddPlayer] = useState(false);
@@ -41,12 +39,22 @@ const Game: React.FC = () => {
   if (!isPlaying) return null;
 
   const isExtreme = currentChallenge?.isExtreme;
+  const isPower = currentChallenge?.isPower;
+  const isTimed = currentChallenge?.type === 'timed';
+  const isCategory = currentChallenge?.type === 'category';
+
+  // Get background color based on card type
+  const getBgClass = () => {
+    if (isExtreme) return 'bg-gradient-to-br from-red-600 to-red-800';
+    if (isPower) return 'bg-gradient-to-br from-purple-600 to-purple-800';
+    if (isTimed) return 'bg-gradient-to-br from-amber-500 to-orange-600';
+    if (isCategory) return 'bg-gradient-to-br from-blue-500 to-blue-700';
+    return 'bg-gradient-to-br from-primary to-blue-700';
+  };
 
   return (
     <motion.div 
-      className={`min-h-screen flex flex-col transition-colors duration-500 ${
-        isExtreme ? 'bg-extreme' : 'bg-muted/30'
-      }`}
+      className={`min-h-screen flex flex-col transition-all duration-500 ${getBgClass()}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
@@ -55,9 +63,7 @@ const Game: React.FC = () => {
         <div className="flex items-center justify-between max-w-md mx-auto">
           <button 
             onClick={handleExit} 
-            className={`p-2 rounded-xl transition-all hover:bg-background/10 ${
-              isExtreme ? 'text-extreme-foreground' : 'text-foreground'
-            }`}
+            className="p-2.5 rounded-xl transition-all hover:bg-white/10 text-white"
             aria-label="Salir"
           >
             <X size={24} strokeWidth={2} />
@@ -68,13 +74,12 @@ const Game: React.FC = () => {
 
           <button 
             onClick={() => setShowAddPlayer(true)}
-            className={`p-2 rounded-xl transition-all hover:bg-background/10 flex items-center gap-1.5 ${
-              isExtreme ? 'text-extreme-foreground' : 'text-foreground'
-            }`}
+            className="p-2.5 rounded-xl transition-all hover:bg-white/10 flex items-center gap-2 text-white"
             aria-label="Agregar jugador"
           >
             <Users size={20} strokeWidth={2} />
-            <span className="font-semibold">{players.length}</span>
+            <Plus size={16} strokeWidth={2.5} className="-ml-1" />
+            <span className="font-bold">{players.length}</span>
           </button>
         </div>
       </div>
@@ -122,8 +127,8 @@ const Game: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
         >
-          <p className={`body-small ${isExtreme ? 'text-extreme-foreground/60' : 'text-muted-foreground'}`}>
-            toca para continuar →
+          <p className="body-small text-white/60">
+            toca para continuar
           </p>
         </motion.div>
       )}
@@ -139,7 +144,7 @@ const Game: React.FC = () => {
           >
             <div className="w-full max-w-sm">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="heading-medium">Agregar jugador</h2>
+                <h2 className="heading-medium">Jugadores</h2>
                 <button 
                   onClick={() => setShowAddPlayer(false)}
                   className="p-2 rounded-xl hover:bg-secondary transition-colors"

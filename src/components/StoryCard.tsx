@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useGame } from '@/context/GameContext';
-import { Timer, Sparkles } from 'lucide-react';
+import { Clock, Zap, Target, Crown } from 'lucide-react';
 
 const StoryCard: React.FC = () => {
   const { 
@@ -56,6 +56,7 @@ const StoryCard: React.FC = () => {
   if (!currentChallenge) return null;
 
   const isExtreme = currentChallenge.isExtreme;
+  const isPower = currentChallenge.isPower;
   const isTimed = currentChallenge.type === 'timed';
   const isCategory = currentChallenge.type === 'category';
 
@@ -118,12 +119,31 @@ const StoryCard: React.FC = () => {
     }),
   };
 
-  // Background style based on challenge type
-  const getCardStyle = () => {
-    if (isExtreme) return 'bg-extreme text-extreme-foreground';
-    if (isTimed) return 'bg-gradient-to-br from-amber-500 to-orange-600 text-white';
-    if (isCategory) return 'bg-gradient-to-br from-primary to-blue-600 text-white';
-    return '';
+  // Get card style class based on challenge type
+  const getCardClass = () => {
+    if (isExtreme) return 'card-game card-game-extreme';
+    if (isPower) return 'card-game card-game-power';
+    if (isTimed) return 'card-game card-game-timed';
+    if (isCategory) return 'card-game card-game-category';
+    return 'card-game card-game-normal';
+  };
+
+  // Get icon for card type
+  const getCardIcon = () => {
+    if (isExtreme) return <Zap size={32} className="opacity-90" />;
+    if (isPower) return <Crown size={32} className="opacity-90" />;
+    if (isTimed) return <Clock size={32} className="opacity-90" />;
+    if (isCategory) return <Target size={32} className="opacity-90" />;
+    return null;
+  };
+
+  // Get badge text
+  const getBadgeText = () => {
+    if (isExtreme) return 'EXTREMO';
+    if (isPower) return 'PODER';
+    if (isTimed) return 'TIEMPO';
+    if (isCategory) return 'CATEGORÍA';
+    return null;
   };
 
   return (
@@ -153,81 +173,70 @@ const StoryCard: React.FC = () => {
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.15}
           onDragEnd={handleDragEnd}
-          className={`card-game ${getCardStyle()}`}
+          className={getCardClass()}
         >
+          {/* Badge for card type */}
+          {getBadgeText() && (
+            <motion.div
+              className="power-badge"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              {getCardIcon()}
+              <span className="ml-1">{getBadgeText()}</span>
+            </motion.div>
+          )}
+
           {/* Timer Display for timed challenges */}
           {isTimed && timeLeft !== null && (
             <motion.div
-              className="absolute top-6 right-6 flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full"
+              className="timer-badge"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', delay: 0.1 }}
             >
-              <Timer size={20} className={timeLeft <= 10 ? 'animate-pulse text-red-200' : ''} />
-              <span className={`text-xl font-bold ${timeLeft <= 10 ? 'text-red-200 animate-pulse' : ''}`}>
+              <Clock size={20} className={timeLeft <= 10 ? 'animate-pulse' : ''} />
+              <span className={`text-xl font-bold ${timeLeft <= 10 ? 'animate-pulse' : ''}`}>
                 {formatTime(timeLeft)}
               </span>
             </motion.div>
           )}
 
-          {/* Emoji for extreme */}
-          {isExtreme && (
-            <motion.span
-              className="text-6xl mb-6"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', delay: 0.1 }}
-            >
-              🔥
-            </motion.span>
-          )}
-
-          {/* Category icon */}
-          {isCategory && (
+          {/* Card Type Icon */}
+          {!getBadgeText() && (
             <motion.div
-              className="mb-4"
+              className="mb-6 opacity-80"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', delay: 0.1 }}
             >
-              <Sparkles size={40} className="opacity-80" />
+              {getCardIcon()}
             </motion.div>
-          )}
-
-          {/* Timer icon for timed */}
-          {isTimed && (
-            <motion.span
-              className="text-5xl mb-4"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', delay: 0.1 }}
-            >
-              ⏱️
-            </motion.span>
           )}
 
           {/* Main Challenge Text */}
           <motion.h2
-            className="heading-card mb-6 leading-tight"
+            className="heading-card mb-6 leading-tight px-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.15 }}
           >
             {processedContent.title}
           </motion.h2>
 
-          {/* Subtitle / Instructions - with better formatting for categories */}
+          {/* Subtitle / Instructions */}
           {processedContent.subtitle && (
             <motion.div
-              className={`max-w-sm ${isExtreme ? 'text-extreme-foreground/90' : isTimed || isCategory ? 'text-white/90' : 'text-muted-foreground'}`}
+              className="max-w-sm opacity-90"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.25 }}
             >
               {processedContent.subtitle.split('\n').map((line, index) => (
                 <p 
                   key={index} 
-                  className={`body-large ${index > 0 ? 'mt-2 font-semibold' : ''}`}
+                  className={`body-large ${index > 0 ? 'mt-3 font-bold text-lg' : ''}`}
                 >
                   {line}
                 </p>
@@ -251,8 +260,22 @@ const StoryCard: React.FC = () => {
                   transition={{ duration: 0.5, ease: 'linear' }}
                 />
               </div>
-              <p className="text-center text-sm mt-3 opacity-70">
+              <p className="text-center text-sm mt-3 opacity-70 font-medium">
                 {timeLeft > 0 ? '¡El tiempo corre!' : '¡Se acabó el tiempo!'}
+              </p>
+            </motion.div>
+          )}
+          
+          {/* Power card special instruction */}
+          {isPower && (
+            <motion.div
+              className="absolute bottom-8 left-8 right-8 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              <p className="text-sm opacity-70 font-medium">
+                Guarda este poder para usarlo cuando quieras
               </p>
             </motion.div>
           )}

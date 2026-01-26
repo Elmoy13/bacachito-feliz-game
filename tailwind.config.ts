@@ -57,6 +57,14 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+          normal: "hsl(var(--card-normal))",
+          "normal-foreground": "hsl(var(--card-normal-foreground))",
+          timed: "hsl(var(--card-timed))",
+          "timed-foreground": "hsl(var(--card-timed-foreground))",
+          power: "hsl(var(--card-power))",
+          "power-foreground": "hsl(var(--card-power-foreground))",
+          category: "hsl(var(--card-category))",
+          "category-foreground": "hsl(var(--card-category-foreground))",
         },
         extreme: {
           DEFAULT: "hsl(var(--extreme))",

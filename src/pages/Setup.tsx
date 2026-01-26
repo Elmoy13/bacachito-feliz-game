@@ -71,29 +71,34 @@ const Setup: React.FC = () => {
             Modo de juego
           </h2>
           <div className="grid gap-3">
-            {gameModes.map((mode, index) => (
-              <motion.button
-                key={mode.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + index * 0.05 }}
-                onClick={() => selectMode(mode.id)}
-                className={`card-mode flex items-center gap-4 text-left w-full ${
-                  selectedMode?.id === mode.id ? 'selected' : ''
-                }`}
-              >
-                <span className="text-3xl">{mode.emoji}</span>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground">{mode.name}</h3>
-                  <p className="body-small text-muted-foreground">{mode.description}</p>
-                </div>
-                {selectedMode?.id === mode.id && (
-                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                    <Check size={14} className="text-primary-foreground" />
+            {gameModes.map((mode, index) => {
+              const IconComponent = mode.icon;
+              return (
+                <motion.button
+                  key={mode.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 + index * 0.05 }}
+                  onClick={() => selectMode(mode.id)}
+                  className={`card-mode flex items-center gap-4 text-left w-full ${
+                    selectedMode?.id === mode.id ? 'selected' : ''
+                  }`}
+                >
+                  <div className={`mode-icon ${mode.bgColor}`}>
+                    <IconComponent size={24} className="text-white" />
                   </div>
-                )}
-              </motion.button>
-            ))}
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground">{mode.name}</h3>
+                    <p className="body-small text-muted-foreground">{mode.description}</p>
+                  </div>
+                  {selectedMode?.id === mode.id && (
+                    <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                      <Check size={14} className="text-primary-foreground" />
+                    </div>
+                  )}
+                </motion.button>
+              );
+            })}
           </div>
         </motion.section>
 
@@ -115,12 +120,6 @@ const Setup: React.FC = () => {
                 : `Empezar con ${players.length} jugadores`
             }
           </button>
-          
-          {selectedMode && (
-            <p className="body-small text-center text-muted-foreground mt-4">
-              {selectedMode.challenges?.length || 0} cartas en este modo
-            </p>
-          )}
         </motion.div>
       </div>
     </div>
