@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,7 +7,7 @@
 @layer base {
   :root {
     /* Clean Modern SaaS Palette */
-    --background: 0 0% 100%;
+    --background: 0 0% 98%;
     --foreground: 220 20% 10%;
 
     --card: 0 0% 100%;
@@ -37,6 +37,19 @@
     
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
+
+    /* Card Types */
+    --card-normal: 221 83% 53%;
+    --card-normal-foreground: 0 0% 100%;
+    
+    --card-timed: 38 92% 50%;
+    --card-timed-foreground: 0 0% 100%;
+    
+    --card-power: 280 80% 55%;
+    --card-power-foreground: 0 0% 100%;
+    
+    --card-category: 200 80% 50%;
+    --card-category-foreground: 0 0% 100%;
 
     /* EXTREME - Red for intense challenges */
     --extreme: 0 85% 50%;
@@ -107,7 +120,7 @@
 @layer components {
   /* Modern Typography */
   .heading-display {
-    @apply text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight;
+    @apply text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-tight;
   }
 
   .heading-large {
@@ -119,7 +132,7 @@
   }
 
   .heading-card {
-    @apply text-xl sm:text-2xl md:text-3xl font-bold tracking-tight leading-snug;
+    @apply text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-snug;
   }
 
   .body-large {
@@ -145,8 +158,33 @@
   }
 
   .card-game {
-    @apply bg-card rounded-3xl min-h-[450px] sm:min-h-[520px] w-full max-w-md flex flex-col items-center justify-center p-8 sm:p-12 text-center relative overflow-hidden;
+    @apply rounded-3xl min-h-[480px] sm:min-h-[560px] w-full max-w-md flex flex-col items-center justify-center p-8 sm:p-12 text-center relative overflow-hidden;
     box-shadow: var(--shadow-2xl);
+  }
+  
+  .card-game-normal {
+    background: linear-gradient(135deg, hsl(var(--card-normal)) 0%, hsl(221 83% 45%) 100%);
+    color: hsl(var(--card-normal-foreground));
+  }
+  
+  .card-game-timed {
+    background: linear-gradient(135deg, hsl(var(--card-timed)) 0%, hsl(25 92% 45%) 100%);
+    color: hsl(var(--card-timed-foreground));
+  }
+  
+  .card-game-extreme {
+    background: linear-gradient(135deg, hsl(var(--extreme)) 0%, hsl(0 85% 35%) 100%);
+    color: hsl(var(--extreme-foreground));
+  }
+  
+  .card-game-power {
+    background: linear-gradient(135deg, hsl(var(--card-power)) 0%, hsl(260 80% 45%) 100%);
+    color: hsl(var(--card-power-foreground));
+  }
+  
+  .card-game-category {
+    background: linear-gradient(135deg, hsl(var(--card-category)) 0%, hsl(210 80% 40%) 100%);
+    color: hsl(var(--card-category-foreground));
   }
 
   .card-mode {
@@ -162,6 +200,7 @@
 
   .card-mode.selected {
     @apply border-primary bg-primary/5;
+    box-shadow: var(--shadow-lg);
   }
 
   /* Modern Button Styles */
@@ -216,15 +255,41 @@
     @apply bg-secondary/70;
   }
 
-  /* Mode Card Emoji */
-  .mode-emoji {
-    @apply text-4xl mb-3 block;
+  /* Mode Card Icon */
+  .mode-icon {
+    @apply w-12 h-12 rounded-2xl flex items-center justify-center mb-3;
   }
 
   /* Game Over Card */
   .card-gameover {
     @apply bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-3xl p-10 text-center;
     box-shadow: var(--shadow-2xl);
+  }
+  
+  /* Power badge floating */
+  .power-badge {
+    @apply absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1.5;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Timer badge */
+  .timer-badge {
+    @apply absolute top-4 right-4 px-4 py-2 rounded-full flex items-center gap-2 font-bold;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Active powers panel */
+  .powers-panel {
+    @apply fixed bottom-20 left-4 right-4 bg-card/95 backdrop-blur-md rounded-2xl p-4 z-40;
+    box-shadow: var(--shadow-xl);
+  }
+  
+  /* Floating action button */
+  .fab-modern {
+    @apply fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center z-50;
+    box-shadow: var(--shadow-lg);
   }
 }
 
@@ -247,6 +312,14 @@
 
   .animate-bounce-soft {
     animation: bounce-soft 2s ease-in-out infinite;
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
   }
 }
 
@@ -288,4 +361,21 @@
   50% {
     transform: translateY(-5px);
   }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(255,255,255,0.3);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 40px rgba(255,255,255,0.5);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
 }
