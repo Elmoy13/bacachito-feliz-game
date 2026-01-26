@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useRef } from 'react';
 import { Player, Challenge } from '@/types/game';
 import { gameModes, getChallengesByMode, GameMode } from '@/data/challenges';
+import { saveGameSession } from '@/lib/firebase';
 
 interface GameContextType {
   players: Player[];
@@ -105,7 +106,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return text;
   }, [getRandomPlayer]);
 
-  const startGame = useCallback(() => {
+  const startGame = useCallback(async () => {
     if (players.length >= 2 && selectedMode) {
       const challenges = getChallengesByMode(selectedMode.id);
       const shuffled = shuffleArray(challenges);
@@ -114,6 +115,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsPlaying(true);
       setIsGameOver(false);
       usedPlayersRef.current.clear();
+      
+      // Save game session to Firebase silently
+      try {
+        const playerNames = players.map(p => p.name);
+        const sessionId = await saveGameSession(playerNames, selectedMode.name);
+        console.log('Partida iniciada y guardada:', sessionId);
+      } catch (error) {
+        console.error('Error al guardar la partida:', error);
+      }
     }
   }, [players, selectedMode]);
 

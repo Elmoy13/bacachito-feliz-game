@@ -246,6 +246,15 @@
     font-size: 16px; /* Prevents zoom on iOS */
   }
 
+  .input-editorial {
+    @apply w-full px-5 py-4 bg-background border-2 border-border rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200 font-medium;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .btn-editorial {
+    @apply inline-flex items-center justify-center px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-bold text-base transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
   /* Player Tag */
   .player-tag {
     @apply inline-flex items-center gap-2 px-4 py-2.5 bg-secondary text-secondary-foreground rounded-xl transition-all duration-200 font-medium text-sm;

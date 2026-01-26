@@ -23,6 +23,20 @@ const Landing: React.FC = () => {
           Un juego de mesa para adultos
         </motion.p>
 
+        {/* Logo */}
+        <motion.div
+          className="flex justify-center mb-8"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4, duration: 0.8 }}
+        >
+          <img 
+            src="/logosinletras.png" 
+            alt="Bacachito Feliz" 
+            className="w-48 h-48 object-contain"
+          />
+        </motion.div>
+
         <motion.h1
           className="heading-display mb-6"
           initial={{ opacity: 0, y: 30 }}

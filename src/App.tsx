@@ -7,6 +7,7 @@ import { GameProvider } from "@/context/GameContext";
 import Index from "./pages/Index";
 import Setup from "./pages/Setup";
 import Game from "./pages/Game";
+import Sessions from "./pages/Sessions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/setup" element={<Setup />} />
             <Route path="/game" element={<Game />} />
+            <Route path="/sessions" element={<Sessions />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
