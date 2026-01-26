@@ -3,7 +3,11 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useGame } from '@/context/GameContext';
 import { Clock, Zap, Target, Crown } from 'lucide-react';
 
-const StoryCard: React.FC = () => {
+interface StoryCardProps {
+  onOpenSubGame?: () => void;
+}
+
+const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
   const { 
     currentChallenge, 
     nextChallenge, 
@@ -59,8 +63,12 @@ const StoryCard: React.FC = () => {
   const isPower = currentChallenge.isPower;
   const isTimed = currentChallenge.type === 'timed';
   const isCategory = currentChallenge.type === 'category';
+  const hasSubGames = currentChallenge.hasSubGames;
 
   const handleTap = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Si tiene subjuegos, no avanzar con tap (se deben usar los botones)
+    if (hasSubGames) return;
+    
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const width = rect.width;
@@ -277,6 +285,35 @@ const StoryCard: React.FC = () => {
               <p className="text-sm opacity-70 font-medium">
                 Guarda este poder para usarlo cuando quieras
               </p>
+            </motion.div>
+          )}
+
+          {/* SubGame choice buttons */}
+          {hasSubGames && (
+            <motion.div
+              className="absolute bottom-6 left-6 right-6 flex gap-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextChallenge();
+                }}
+                className="flex-1 py-3 px-4 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white font-semibold transition-all"
+              >
+                Continuar normal
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenSubGame?.();
+                }}
+                className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold transition-all shadow-lg"
+              >
+                Cambiar juego
+              </button>
             </motion.div>
           )}
         </motion.div>
