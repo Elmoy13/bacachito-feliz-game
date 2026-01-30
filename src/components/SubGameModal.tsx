@@ -4,13 +4,33 @@ import { SubGame, SubGameType, SubGameCard } from '../types/game';
 import { subGames } from '../data/subgames';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { X, Timer, ArrowRight, ArrowLeft, Shuffle } from 'lucide-react';
+import { 
+  X, Timer, ArrowRight, ArrowLeft, Shuffle, 
+  MessageCircleQuestion, Ban, Users, XCircle, Heart, Flame,
+  Clock, Gamepad2, ChevronLeft, Sparkles
+} from 'lucide-react';
 
 interface SubGameModalProps {
   isOpen: boolean;
   onClose: () => void;
   availableGames: SubGameType[];
 }
+
+// Map game IDs to icons
+const gameIcons: Record<SubGameType, React.ReactNode> = {
+  'verdad-reto': <MessageCircleQuestion size={32} />,
+  'yo-nunca': <Ban size={32} />,
+  'quien-es-mas': <Users size={32} />,
+  'nunca-he': <XCircle size={32} />,
+  'confesiones': <Heart size={32} />,
+  'retos-hot': <Flame size={32} />,
+};
+
+// Card type icons
+const cardTypeIcons = {
+  verdad: <MessageCircleQuestion size={16} />,
+  reto: <Sparkles size={16} />,
+};
 
 export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, availableGames }) => {
   const [selectedGame, setSelectedGame] = useState<SubGame | null>(null);
@@ -41,7 +61,6 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
 
   const selectGame = (game: SubGame) => {
     setSelectedGame(game);
-    // Mezclar cartas
     const shuffled = [...game.cards].sort(() => Math.random() - 0.5);
     setShuffledCards(shuffled);
     setCurrentCardIndex(0);
@@ -52,7 +71,6 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
     if (currentCardIndex < shuffledCards.length - 1) {
       setCurrentCardIndex(prev => prev + 1);
     } else {
-      // Reiniciar al principio
       setCurrentCardIndex(0);
     }
   };
@@ -81,6 +99,19 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const getCardGradient = () => {
+    if (!selectedGame) return 'from-primary to-blue-600';
+    switch (selectedGame.id) {
+      case 'verdad-reto': return 'from-violet-600 to-purple-700';
+      case 'yo-nunca': return 'from-rose-600 to-red-700';
+      case 'quien-es-mas': return 'from-blue-600 to-indigo-700';
+      case 'nunca-he': return 'from-amber-500 to-orange-600';
+      case 'confesiones': return 'from-pink-600 to-rose-700';
+      case 'retos-hot': return 'from-red-600 to-rose-800';
+      default: return 'from-primary to-blue-600';
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -95,32 +126,56 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
         }}
       >
         <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-gradient-to-br from-[#1a1f35] to-[#0f1219] rounded-3xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden relative border border-white/10"
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.9, opacity: 0, y: 20 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden relative border border-white/10"
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-4 sm:p-6 relative">
+          <div className={`bg-gradient-to-r ${getCardGradient()} p-4 sm:p-6 relative`}>
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 sm:top-4 sm:right-4 text-white/80 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 text-white/80 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-xl"
             >
               <X size={20} />
             </button>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white pr-10">
-              {selectedGame ? selectedGame.name : '🎮 Mini Juegos'}
-            </h2>
+            
+            <div className="flex items-center gap-3">
+              {selectedGame && (
+                <button
+                  onClick={goBackToSelection}
+                  className="p-2 hover:bg-white/10 rounded-xl transition-colors text-white/80 hover:text-white"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+              )}
+              <div className="flex items-center gap-3">
+                {selectedGame ? (
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
+                    {gameIcons[selectedGame.id]}
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
+                    <Gamepad2 size={24} />
+                  </div>
+                )}
+                <h2 className="text-xl sm:text-2xl font-bold text-white">
+                  {selectedGame ? selectedGame.name : 'Mini Juegos'}
+                </h2>
+              </div>
+            </div>
+            
             {selectedGame && (
-              <div className="flex items-center gap-3 mt-3 flex-wrap">
-                <div className="flex items-center gap-2 bg-white/20 rounded-full px-3 py-1.5">
-                  <Timer size={16} className="text-white" />
-                  <span className="text-white font-semibold text-sm">
+              <div className="flex items-center gap-3 mt-4">
+                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                  <Clock size={16} className="text-white" />
+                  <span className={`text-white font-bold ${timeRemaining <= 30 ? 'animate-pulse text-amber-200' : ''}`}>
                     {formatTime(timeRemaining)}
                   </span>
                 </div>
                 {timeRemaining === 0 && (
-                  <span className="text-amber-300 font-semibold animate-pulse text-sm">
+                  <span className="text-amber-200 font-bold animate-pulse">
                     ¡Tiempo terminado!
                   </span>
                 )}
@@ -129,27 +184,32 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
           </div>
 
           {/* Content */}
-          <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(85vh-200px)]">
+          <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(85vh-180px)]">
             {!selectedGame ? (
-              // Selección de juego
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {availableSubGames.map((game) => (
+              // Game Selection Grid
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {availableSubGames.map((game, index) => (
                   <motion.div
                     key={game.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                   >
                     <Card
-                      className="p-4 sm:p-6 bg-gradient-to-br from-[#1e2742] to-[#151b2e] border-white/10 cursor-pointer hover:border-blue-500/50 transition-all"
+                      className="p-4 bg-gradient-to-br from-slate-800 to-slate-900 border-white/10 cursor-pointer hover:border-white/30 transition-all group"
                       onClick={() => selectGame(game)}
                     >
                       <div className="text-center">
-                        <div className="text-4xl sm:text-5xl mb-3">{game.icon}</div>
-                        <h3 className="text-lg sm:text-xl font-bold text-white mb-2">{game.name}</h3>
-                        <p className="text-gray-400 text-xs sm:text-sm mb-3">{game.description}</p>
-                        <div className="flex items-center justify-center gap-2 text-blue-400 text-xs">
-                          <Timer size={14} />
-                          <span>{game.duration / 60} minutos</span>
+                        <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                          {gameIcons[game.id]}
+                        </div>
+                        <h3 className="text-sm sm:text-base font-bold text-white mb-1">{game.name}</h3>
+                        <p className="text-gray-400 text-xs line-clamp-2">{game.description}</p>
+                        <div className="flex items-center justify-center gap-1 text-white/50 text-xs mt-2">
+                          <Timer size={12} />
+                          <span>{game.duration / 60} min</span>
                         </div>
                       </div>
                     </Card>
@@ -157,44 +217,42 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
                 ))}
               </div>
             ) : (
-              // Jugando el subjuego
+              // Playing the subgame
               <div className="space-y-4">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentCardIndex}
-                    initial={{ x: 100, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -100, opacity: 0 }}
+                    initial={{ x: 100, opacity: 0, rotateY: -15 }}
+                    animate={{ x: 0, opacity: 1, rotateY: 0 }}
+                    exit={{ x: -100, opacity: 0, rotateY: 15 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   >
-                    <Card className="p-6 sm:p-8 bg-gradient-to-br from-blue-600 to-blue-500 border-0 shadow-xl">
+                    <Card className={`p-6 sm:p-8 bg-gradient-to-br ${getCardGradient()} border-0 shadow-2xl min-h-[200px] flex flex-col justify-center`}>
                       <div className="text-center">
                         {shuffledCards[currentCardIndex]?.type && (
-                          <div className="inline-block mb-3 sm:mb-4 px-3 sm:px-4 py-1 rounded-full bg-white/20 text-white text-xs sm:text-sm font-semibold">
-                            {shuffledCards[currentCardIndex].type === 'verdad' ? '💬 Verdad' : '🎭 Reto'}
+                          <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full bg-white/20 text-white text-sm font-semibold">
+                            {cardTypeIcons[shuffledCards[currentCardIndex].type as 'verdad' | 'reto']}
+                            <span>{shuffledCards[currentCardIndex].type === 'verdad' ? 'Verdad' : 'Reto'}</span>
                           </div>
                         )}
-                        <p className="text-white text-xl sm:text-2xl font-bold leading-relaxed px-2">
+                        <p className="text-white text-lg sm:text-xl font-bold leading-relaxed">
                           {shuffledCards[currentCardIndex]?.text}
                         </p>
-                        <div className="mt-4 sm:mt-6 text-blue-200 text-xs sm:text-sm">
-                          Carta {currentCardIndex + 1} de {shuffledCards.length}
-                        </div>
                       </div>
                     </Card>
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Controles */}
-                <div className="flex items-center justify-between gap-2 sm:gap-3">
+                {/* Controls */}
+                <div className="flex items-center justify-between gap-2">
                   <Button
                     onClick={prevCard}
                     variant="outline"
                     size="lg"
-                    className="flex-1 bg-white/5 border-white/10 hover:bg-white/10 text-white text-sm sm:text-base"
+                    className="flex-1 bg-white/5 border-white/10 hover:bg-white/10 text-white"
                     disabled={currentCardIndex === 0}
                   >
-                    <ArrowLeft size={18} className="mr-1 sm:mr-2" />
+                    <ArrowLeft size={18} className="mr-2" />
                     <span className="hidden sm:inline">Anterior</span>
                   </Button>
                   
@@ -202,43 +260,34 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
                     onClick={shuffleCards}
                     variant="outline"
                     size="lg"
-                    className="flex-shrink-0 bg-white/5 border-white/10 hover:bg-white/10 text-white px-3 sm:px-4"
+                    className="bg-white/5 border-white/10 hover:bg-white/10 text-white px-4"
                   >
                     <Shuffle size={18} />
                   </Button>
 
                   <Button
                     onClick={nextCard}
-                    variant="default"
                     size="lg"
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base"
+                    className={`flex-1 bg-gradient-to-r ${getCardGradient()} hover:opacity-90 text-white border-0`}
                   >
                     <span className="hidden sm:inline">Siguiente</span>
                     <span className="sm:hidden">Next</span>
-                    <ArrowRight size={18} className="ml-1 sm:ml-2" />
+                    <ArrowRight size={18} className="ml-2" />
                   </Button>
                 </div>
-
-                <Button
-                  onClick={goBackToSelection}
-                  variant="outline"
-                  size="lg"
-                  className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white text-sm sm:text-base"
-                >
-                  Cambiar de juego
-                </Button>
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="bg-[#0f1219] p-4 border-t border-white/10">
+          <div className="bg-slate-900/80 backdrop-blur-sm p-4 border-t border-white/10">
             <Button
               onClick={onClose}
               variant="outline"
               size="lg"
-              className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white text-sm sm:text-base"
+              className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white"
             >
+              <X size={16} className="mr-2" />
               Volver al juego principal
             </Button>
           </div>
