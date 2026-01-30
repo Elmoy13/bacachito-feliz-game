@@ -89,38 +89,38 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4"
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
+          initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-gradient-to-br from-gray-900 to-black rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden relative"
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-gradient-to-br from-[#1a1f35] to-[#0f1219] rounded-3xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden relative border border-white/10"
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 relative">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-4 sm:p-6 relative">
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 text-white/80 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg"
             >
-              <X size={24} />
+              <X size={20} />
             </button>
-            <h2 className="text-3xl font-bold text-white">
-              {selectedGame ? selectedGame.name : '🎮 Subjuegos'}
+            <h2 className="text-2xl sm:text-3xl font-bold text-white pr-10">
+              {selectedGame ? selectedGame.name : '🎮 Mini Juegos'}
             </h2>
             {selectedGame && (
-              <div className="flex items-center gap-3 mt-2">
-                <div className="flex items-center gap-2 bg-white/20 rounded-full px-3 py-1">
+              <div className="flex items-center gap-3 mt-3 flex-wrap">
+                <div className="flex items-center gap-2 bg-white/20 rounded-full px-3 py-1.5">
                   <Timer size={16} className="text-white" />
-                  <span className="text-white font-semibold">
+                  <span className="text-white font-semibold text-sm">
                     {formatTime(timeRemaining)}
                   </span>
                 </div>
                 {timeRemaining === 0 && (
-                  <span className="text-yellow-300 font-semibold animate-pulse">
+                  <span className="text-amber-300 font-semibold animate-pulse text-sm">
                     ¡Tiempo terminado!
                   </span>
                 )}
@@ -129,25 +129,25 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
           </div>
 
           {/* Content */}
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+          <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(85vh-200px)]">
             {!selectedGame ? (
               // Selección de juego
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {availableSubGames.map((game) => (
                   <motion.div
                     key={game.id}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <Card
-                      className="p-6 bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 cursor-pointer hover:border-purple-500 transition-all"
+                      className="p-4 sm:p-6 bg-gradient-to-br from-[#1e2742] to-[#151b2e] border-white/10 cursor-pointer hover:border-blue-500/50 transition-all"
                       onClick={() => selectGame(game)}
                     >
                       <div className="text-center">
-                        <div className="text-5xl mb-3">{game.icon}</div>
-                        <h3 className="text-xl font-bold text-white mb-2">{game.name}</h3>
-                        <p className="text-gray-400 text-sm mb-3">{game.description}</p>
-                        <div className="flex items-center justify-center gap-2 text-purple-400 text-xs">
+                        <div className="text-4xl sm:text-5xl mb-3">{game.icon}</div>
+                        <h3 className="text-lg sm:text-xl font-bold text-white mb-2">{game.name}</h3>
+                        <p className="text-gray-400 text-xs sm:text-sm mb-3">{game.description}</p>
+                        <div className="flex items-center justify-center gap-2 text-blue-400 text-xs">
                           <Timer size={14} />
                           <span>{game.duration / 60} minutos</span>
                         </div>
@@ -167,17 +167,17 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
                     exit={{ x: -100, opacity: 0 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   >
-                    <Card className="p-8 bg-gradient-to-br from-purple-900 to-pink-900 border-purple-500">
+                    <Card className="p-6 sm:p-8 bg-gradient-to-br from-blue-600 to-blue-500 border-0 shadow-xl">
                       <div className="text-center">
                         {shuffledCards[currentCardIndex]?.type && (
-                          <div className="inline-block mb-4 px-4 py-1 rounded-full bg-white/20 text-white text-sm font-semibold">
+                          <div className="inline-block mb-3 sm:mb-4 px-3 sm:px-4 py-1 rounded-full bg-white/20 text-white text-xs sm:text-sm font-semibold">
                             {shuffledCards[currentCardIndex].type === 'verdad' ? '💬 Verdad' : '🎭 Reto'}
                           </div>
                         )}
-                        <p className="text-white text-2xl font-bold leading-relaxed">
+                        <p className="text-white text-xl sm:text-2xl font-bold leading-relaxed px-2">
                           {shuffledCards[currentCardIndex]?.text}
                         </p>
-                        <div className="mt-6 text-purple-300 text-sm">
+                        <div className="mt-4 sm:mt-6 text-blue-200 text-xs sm:text-sm">
                           Carta {currentCardIndex + 1} de {shuffledCards.length}
                         </div>
                       </div>
@@ -186,35 +186,36 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
                 </AnimatePresence>
 
                 {/* Controles */}
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-2 sm:gap-3">
                   <Button
                     onClick={prevCard}
                     variant="outline"
                     size="lg"
-                    className="flex-1"
+                    className="flex-1 bg-white/5 border-white/10 hover:bg-white/10 text-white text-sm sm:text-base"
                     disabled={currentCardIndex === 0}
                   >
-                    <ArrowLeft size={20} className="mr-2" />
-                    Anterior
+                    <ArrowLeft size={18} className="mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Anterior</span>
                   </Button>
                   
                   <Button
                     onClick={shuffleCards}
                     variant="outline"
                     size="lg"
-                    className="flex-shrink-0"
+                    className="flex-shrink-0 bg-white/5 border-white/10 hover:bg-white/10 text-white px-3 sm:px-4"
                   >
-                    <Shuffle size={20} />
+                    <Shuffle size={18} />
                   </Button>
 
                   <Button
                     onClick={nextCard}
                     variant="default"
                     size="lg"
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base"
                   >
-                    Siguiente
-                    <ArrowRight size={20} className="ml-2" />
+                    <span className="hidden sm:inline">Siguiente</span>
+                    <span className="sm:hidden">Next</span>
+                    <ArrowRight size={18} className="ml-1 sm:ml-2" />
                   </Button>
                 </div>
 
@@ -222,7 +223,7 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
                   onClick={goBackToSelection}
                   variant="outline"
                   size="lg"
-                  className="w-full"
+                  className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white text-sm sm:text-base"
                 >
                   Cambiar de juego
                 </Button>
@@ -231,12 +232,12 @@ export const SubGameModal: React.FC<SubGameModalProps> = ({ isOpen, onClose, ava
           </div>
 
           {/* Footer */}
-          <div className="bg-gray-900 p-4 border-t border-gray-800">
+          <div className="bg-[#0f1219] p-4 border-t border-white/10">
             <Button
               onClick={onClose}
               variant="outline"
               size="lg"
-              className="w-full"
+              className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white text-sm sm:text-base"
             >
               Volver al juego principal
             </Button>
