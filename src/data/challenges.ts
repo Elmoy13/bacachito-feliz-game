@@ -93,6 +93,20 @@ export const precopeoChallenges: Challenge[] = [
   { id: 'pre-36j', type: 'vote', template: '¿Quién lloraría en una película infantil?', subtitle: 'El sensible: 2 tragos de lágrimas.' },
   { id: 'pre-36k', type: 'vote', template: '¿Quién sería el mejor vendedor?', subtitle: 'El más labia: reparte 3 tragos.' },
   
+  // Cachondonas pero azules
+  { id: 'pre-36l', type: 'direct', template: '{player}, menciona 2 jugadores.', subtitle: 'Con uno de ellos te besarías. Si no quieres decir: 7 tragos.' },
+  { id: 'pre-36m', type: 'group', template: 'Toma 3 tragos si te darías con alguien de aquí.', subtitle: 'Honestidad ante todo.' },
+  { id: 'pre-36n', type: 'direct', template: '{player}, di una red flag tuya.', subtitle: 'Algo que espanta a la gente. Si no: 5 tragos.' },
+  { id: 'pre-36o', type: 'vote', template: '¿Con quién de aquí saldrías si fueras soltero?', subtitle: 'Señalen. El más señalado reparte 4 tragos.' },
+  { id: 'pre-36p', type: 'group', template: 'Los que le han mandado nudes a alguien: 2 tragos.', subtitle: 'Sin miedo al éxito.' },
+  { id: 'pre-36q', type: 'direct', template: '{player}, clasifica a todos del 1 al 10 en atractivo.', subtitle: 'Si te da pena: 8 tragos y te salvas.' },
+  { id: 'pre-36r', type: 'vote', template: '¿Quién besa mejor según ustedes?', subtitle: 'Señalen. El elegido reparte 5 tragos con orgullo.' },
+  { id: 'pre-36s', type: 'direct', template: '{player}, elige a alguien.', subtitle: '¿Tendrías una cita con esa persona? Sí o no. Mentir: 6 tragos.' },
+  { id: 'pre-36t', type: 'group', template: 'Los que han coqueteado hoy: 2 tragos.', subtitle: 'Se nota.' },
+  { id: 'pre-36u', type: 'random', template: 'Toma 3 tragos si alguna vez te gustó alguien de aquí.', subtitle: 'El pasado cuenta.' },
+  { id: 'pre-36v', type: 'vote', template: '¿Quién tiene el mejor cuerpo?', subtitle: 'Señalen. El fit reparte 4 tragos.' },
+  { id: 'pre-36w', type: 'direct', template: '{player}, di el nombre de la persona más atractiva.', subtitle: 'O escápate con 7 tragos.' },
+  
   // Random
   { id: 'pre-37', type: 'random', template: 'Los que traigan algo azul toman 1.', subtitle: 'Revisen bien, no hagan trampa.' },
   { id: 'pre-38', type: 'random', template: '{player} y {player2}: duelo de miradas.', subtitle: 'El primero en reír: fondo.' },
@@ -139,6 +153,7 @@ export const precopeoChallenges: Challenge[] = [
   { id: 'pre-53', type: 'extreme', template: 'TEAM CASA', subtitle: 'Los que vivan con sus papás: shot. Es lo que hay.', isExtreme: true },
   { id: 'pre-54', type: 'extreme', template: 'GENERACIÓN REDES', subtitle: 'Los que tengan más de 3 redes sociales activas: shot.', isExtreme: true },
   { id: 'pre-55', type: 'extreme', template: 'PROCRASTINADORES UNIDOS', subtitle: 'Los que dejaron algo importante para después: shot.', isExtreme: true },
+  { id: 'pre-56', type: 'extreme', template: '{player} y {player2}, MOMENTO VALIENTE', subtitle: 'Pueden darse un pico aunque sea o se toman 3 segundos de shot cada uno.', isExtreme: true },
 ];
 
 // PEDA - Shots y retos más intensos
@@ -150,6 +165,11 @@ export const pedaChallenges: Challenge[] = [
   { id: 'peda-4', type: 'direct', template: '{player}, elige a alguien. Piedra, papel o tijera.', subtitle: 'El perdedor: shot completo.' },
   { id: 'peda-5', type: 'direct', template: '{player}, di tu mayor red flag.', subtitle: 'Sé honesto. Si te callas: shot doble.' },
   { id: 'peda-6', type: 'direct', template: '{player}, cuántos seguidores tienes en Instagram.', subtitle: 'Adivinen. El más cercano manda shot a {player}.' },
+  { id: 'peda-6a', type: 'direct', template: '{player}, elige a alguien para hacer una confesión.', subtitle: 'La persona elegida confiesa algo o 5 shots.' },
+  { id: 'peda-6b', type: 'vote', template: '¿Quién tiene mejor físico?', subtitle: 'Señalen. El ganador reparte 4 shots.' },
+  { id: 'peda-6c', type: 'direct', template: '{player}, di con quién de aquí te quedarías a solas.', subtitle: 'O niégate con 6 shots.' },
+  { id: 'peda-6d', type: 'group', template: 'Los que hayan stalkeado a alguien de aquí: 3 shots.', subtitle: 'Stalkers anónimos.' },
+  { id: 'peda-6e', type: 'random', template: 'Toma 4 shots si alguna vez soñaste con alguien del grupo.', subtitle: 'El subconsciente habla.' },
   { id: 'peda-7', type: 'direct', template: '{player}, haz una impresión de una celebridad.', subtitle: 'Si nadie adivina en 30 segundos: shot.' },
   { id: 'peda-8', type: 'direct', template: '{player}, di el crush secreto de alguien del grupo.', subtitle: 'Si aciertas: reparte 3. Si no: te tomas 3.' },
   { id: 'peda-9', type: 'direct', template: '{player}, canta una canción sin decir el título.', subtitle: 'Si no la adivinan: shot.' },
@@ -205,6 +225,15 @@ export const pedaChallenges: Challenge[] = [
   { id: 'peda-22f', type: 'group', template: 'Señalen a quien tiene más matches en apps de citas.', subtitle: 'El galán: shot de respeto.' },
   { id: 'peda-22g', type: 'group', template: 'Los que vivan con sus papás toman 1.', subtitle: 'No hay pex.' },
   { id: 'peda-22h', type: 'group', template: 'El que tenga el story de Instagram más viejo toma.', subtitle: 'Revisen. El nostálgico: shot.' },
+  
+  // Cachondonas peda (azules)
+  { id: 'peda-22i', type: 'direct', template: '{player}, di con quién de aquí tendrías algo.', subtitle: 'O rechaza con 6 shots.' },
+  { id: 'peda-22j', type: 'group', template: 'Toma 4 shots si alguna vez soñaste con alguien de aquí.', subtitle: 'El subconsciente no miente.' },
+  { id: 'peda-22k', type: 'vote', template: '¿Quién sería mejor en la cama?', subtitle: 'Señalen. El elegido reparte 5 shots con orgullo.' },
+  { id: 'peda-22l', type: 'direct', template: '{player}, ¿con quién de aquí irías a un hotel?', subtitle: 'Di un nombre o 8 shots.' },
+  { id: 'peda-22m', type: 'group', template: 'Los que le han tirado la onda a alguien de aquí: 3 shots.', subtitle: 'Con confianza.' },
+  { id: 'peda-22n', type: 'direct', template: '{player}, clasifica a 3 personas por atractivo.', subtitle: 'Del más al menos. Si te da pena: 7 shots.' },
+  { id: 'peda-22o', type: 'vote', template: '¿Quién tiene el cuerpo más trabajado?', subtitle: 'Señalen. El fit reparte 4 shots.' },
   
   // Categorías
   { id: 'peda-23', type: 'category', template: 'Categoría: Canciones de Bad Bunny', subtitle: '{player} empieza, gira a la DERECHA.\nEl que se equivoque o repita: shot' },
@@ -359,6 +388,14 @@ export const hotChallenges: Challenge[] = [
   { id: 'hot-19', type: 'group', template: '¿Quién tiene más juego?', subtitle: 'El más player: shot de respeto.' },
   { id: 'hot-20', type: 'group', template: 'Señalen a quién stalkean más en Instagram.', subtitle: 'Esa persona decide quién toma.' },
   { id: 'hot-21', type: 'group', template: '¿Quién es el más caliente del grupo?', subtitle: 'El ganador reparte 3 shots.' },
+  { id: 'hot-21a', type: 'direct', template: '{player}, elige a 2 personas.', subtitle: '¿Con cuál tendrías algo? O rechaza con 7 shots.' },
+  { id: 'hot-21b', type: 'vote', template: '¿Con quién te irías al baño?', subtitle: 'Señalen. El elegido reparte 5 shots.' },
+  { id: 'hot-21c', type: 'group', template: 'Los que han fantaseado con alguien de aquí: 3 shots.', subtitle: 'La imaginación no miente.' },
+  { id: 'hot-21d', type: 'direct', template: '{player}, menciona a 3 personas del grupo.', subtitle: 'Rankéalas de 1 a 3 en atractivo. O 8 shots.' },
+  { id: 'hot-21e', type: 'random', template: 'Toma 4 shots si te irías a un hotel con alguien de aquí.', subtitle: 'Sin nombres, solo tomen.' },
+  { id: 'hot-21f', type: 'vote', template: '¿Quién tiene el mejor trasero?', subtitle: 'Señalen. El ganador reparte 4 shots.' },
+  { id: 'hot-21g', type: 'direct', template: '{player}, di con quién te quedarías encerrado 24 horas.', subtitle: 'Nombre o 6 shots.' },
+  { id: 'hot-21h', type: 'group', template: 'Los que le tirarían la onda a alguien hoy: 3 shots.', subtitle: 'Aquí hay química.' },
   { id: 'hot-22', type: 'group', template: 'Señalen a quién le gusta alguien aquí presente.', subtitle: 'Si es verdad: shot. Si no: shot también.' },
   { id: 'hot-23', type: 'group', template: '¿Quién creen que es el mejor besando?', subtitle: 'Basado solo en vibra. El elegido: shot.' },
   { id: 'hot-24', type: 'group', template: 'Señalen a quién le mandarían un nude.', subtitle: 'Hipotéticamente. Shot al más señalado.' },
@@ -560,6 +597,12 @@ export const randomMixChallenges: Challenge[] = [
   { id: 'mix-40d', type: 'random', template: '{player}, cuenta un chiste.', subtitle: 'Si nadie ríe: shot doble.' },
   { id: 'mix-40e', type: 'random', template: 'Los que hayan visto un capítulo de algo en Netflix hoy: shot.', subtitle: 'Procrastinadores.' },
   { id: 'mix-40f', type: 'random', template: '{player}, muestra tu screen time de hoy.', subtitle: 'El que tenga más de 6 horas: shot de adicción.' },
+  { id: 'mix-40g', type: 'direct', template: '{player}, señala a 2 personas.', subtitle: '¿A cuál le darías un beso? Si no eliges: 7 shots.' },
+  { id: 'mix-40h', type: 'group', template: 'Toma 3 shots si has pensado en alguien de aquí de esa forma.', subtitle: 'Ya sabes a qué nos referimos.' },
+  { id: 'mix-40i', type: 'vote', template: '¿Con quién harías match en Tinder?', subtitle: 'Señalen. El más señalado: shot de orgullo.' },
+  { id: 'mix-40j', type: 'direct', template: '{player}, elige 3 personas y rankéalas por atractivo.', subtitle: '1 al 3. O rechaza con 8 shots.' },
+  { id: 'mix-40k', type: 'group', template: 'Los que hayan coqueteado con alguien de aquí: 2 shots.', subtitle: 'Se vale confesar.' },
+  { id: 'mix-40l', type: 'random', template: 'Los que se irían a un after con alguien de aquí: 3 shots.', subtitle: 'Honestidad brutal.' },
   
   // TIMED
   { id: 'mix-t1', type: 'timed', template: '{player}, no puedes sentarte', subtitle: 'Por 2 minutos. Si te sientas: shot', duration: 120 },
@@ -680,6 +723,10 @@ export const fiestaChallenges: Challenge[] = [
   { id: 'fiesta-30c', type: 'group', template: 'Bailen todos 30 segundos.', subtitle: 'El que pare antes: shot.' },
   { id: 'fiesta-30d', type: 'group', template: 'Señalen al rey/reina de la fiesta.', subtitle: 'El más señalado reparte 8 shots como quiera.' },
   { id: 'fiesta-30e', type: 'group', template: 'Los que no sepan bailar reggaeton: shot.', subtitle: 'Demuestren o tomen.' },
+  { id: 'fiesta-30f', type: 'direct', template: '{player}, elige a alguien.', subtitle: '¿Te irías con esa persona al baño? Si no: 6 shots.' },
+  { id: 'fiesta-30g', type: 'vote', template: '¿Quién es la más guapa/guapo de la fiesta?', subtitle: 'Señalen. El ganador reparte 5 shots.' },
+  { id: 'fiesta-30h', type: 'group', template: 'Los que le darían un beso a alguien de aquí: 3 shots.', subtitle: 'Sin nombres, solo tomen.' },
+  { id: 'fiesta-30i', type: 'direct', template: '{player}, menciona 3 personas.', subtitle: '¿Con cuál te quedarías? O rechaza con 7 shots.' },
   
   // TIMED grupales
   { id: 'fiesta-t1', type: 'timed', template: 'Nadie puede decir "yo"', subtitle: 'Por 3 minutos. El que lo diga: shot', duration: 180 },
