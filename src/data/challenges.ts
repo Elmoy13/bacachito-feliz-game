@@ -38,7 +38,7 @@ export const precopeoChallenges: Challenge[] = [
   { id: 'pre-r12', type: 'direct', template: 'El lector es el líder.', subtitle: 'Por las próximas 3 cartas, tú decides quién lee.' },
   { id: 'pre-r13', type: 'direct', template: 'Quien lee esto hace una pregunta.', subtitle: 'Todos responden. El lector decide quién tiene la peor respuesta: 3 tragos.' },
   { id: 'pre-r14', type: 'direct', template: 'Lector bendecido.', subtitle: 'Reparte 5 tragos PERO también debes tomar 1.' },
-  { id: 'pre-r15', type: 'direct', template: 'Lector, tienes una opción.', subtitle: '¿Cambiar el juego por 5 minutos o seguir normal?', hasSubGames: true, subGames: ['verdad-reto', 'yo-nunca', 'quien-es-mas'] },
+  { id: 'pre-r15', type: 'direct', template: 'Lector, tienes una opción.', subtitle: '¿Cambiar el juego por 5 minutos o seguir normal?', hasSubGames: true, subGames: ['verdad-reto', 'yo-nunca', 'quien-es-mas', 'confesiones'] },
   { id: 'pre-r16', type: 'direct', template: 'El que lee esto escoge un tema.', subtitle: 'Quien sepa menos del tema: 2 tragos.' },
   
   // Grupales
@@ -368,7 +368,7 @@ export const hotChallenges: Challenge[] = [
   { id: 'hot-r2', type: 'direct', template: 'Lector, escoge a 2 personas.', subtitle: 'Deben mirarse a los ojos 30 segundos sin reír.' },
   { id: 'hot-r3', type: 'direct', template: 'El lector escoge quién baila sensualmente.', subtitle: '10 segundos. Si no: 3 shots para el elegido.' },
   { id: 'hot-r4', type: 'direct', template: 'Quien lea esto hace una pregunta picante.', subtitle: 'A quien quieras. Si no responde: 3 shots.' },
-  { id: 'hot-r5', type: 'direct', template: 'Lector, opción caliente.', subtitle: '¿Subir la temperatura con otro juego? Tú mandas.', hasSubGames: true, subGames: ['verdad-reto', 'yo-nunca', 'nunca-he'] },
+  { id: 'hot-r5', type: 'direct', template: 'Lector, opción caliente.', subtitle: '¿Subir la temperatura con otro juego? Tú mandas.', hasSubGames: true, subGames: ['verdad-reto', 'yo-nunca', 'nunca-he', 'retos-hot', 'confesiones'] },
   { id: 'hot-r6', type: 'direct', template: 'Lector, momento cupido.', subtitle: 'Empareja a 2 personas. Deben tomarse un shot juntos muy cerca.' },
   { id: 'hot-r6', type: 'direct', template: 'El que lee esta carta manda un piropo.', subtitle: 'A quien quieras. Si se sonroja: reparte 2 shots. Si no: te tomas 2.' },
   { id: 'hot-r7', type: 'direct', template: 'Lector, juego hot.', subtitle: 'Escoge 2 personas. Deben decirse un secreto al oído. Los demás votan quién se sonrojó más: shot.' },
@@ -520,7 +520,7 @@ export const randomMixChallenges: Challenge[] = [
   // Para el lector
   { id: 'mix-r1', type: 'direct', template: 'El lector se convierte en juez.', subtitle: 'Por las próximas 3 cartas, decides si los retos se cumplieron o no.' },
   { id: 'mix-r2', type: 'direct', template: 'Quien lee esto: reparte 6 tragos.', subtitle: 'Como quieras. Puedes dar todos a uno o repartir.' },
-  { id: 'mix-r3', type: 'direct', template: 'Lector, momento decisión.', subtitle: '¿Quieres cambiar el ritmo 5 minutos? Tú eliges.', hasSubGames: true, subGames: ['verdad-reto', 'yo-nunca', 'quien-es-mas', 'nunca-he'] },
+  { id: 'mix-r3', type: 'direct', template: 'Lector, momento decisión.', subtitle: '¿Quieres cambiar el ritmo 5 minutos? Tú eliges.', hasSubGames: true, subGames: ['verdad-reto', 'yo-nunca', 'quien-es-mas', 'nunca-he', 'confesiones', 'retos-hot'] },
   { id: 'mix-r4', type: 'direct', template: 'Lector, momento random.', subtitle: 'Escoge un número del 1-20. Quien adivine más cerca: reparte 3 tragos.' },
   { id: 'mix-r5', type: 'direct', template: 'El que lee esto es el maestro de ceremonias.', subtitle: 'Inicia un brindis. Todos toman. Tú decides por qué.' },
   { id: 'mix-r6', type: 'direct', template: 'Lector, poder de intercambio.', subtitle: 'Puedes intercambiar lugares de 2 personas. Los intercambiados: 1 trago cada uno.' },

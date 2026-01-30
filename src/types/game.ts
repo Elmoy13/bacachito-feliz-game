@@ -1,6 +1,6 @@
 export type ChallengeType = 'direct' | 'group' | 'category' | 'extreme' | 'vote' | 'random' | 'timed' | 'power';
 
-export type SubGameType = 'verdad-reto' | 'yo-nunca' | 'quien-es-mas' | 'nunca-he';
+export type SubGameType = 'verdad-reto' | 'yo-nunca' | 'quien-es-mas' | 'nunca-he' | 'confesiones' | 'retos-hot';
 
 export interface SubGameCard {
   id: string;
