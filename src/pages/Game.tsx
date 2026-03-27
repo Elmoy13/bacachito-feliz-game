@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { X, Users, Plus, RotateCcw, Trophy, Clock } from 'lucide-react';
@@ -6,6 +6,11 @@ import StoryCard from '@/components/StoryCard';
 import PlayerInput from '@/components/PlayerInput';
 import { SubGameModal } from '@/components/SubGameModal';
 import { useGame } from '@/context/GameContext';
+import RegionBadge from '@/components/game/RegionBadge';
+import Bacachito from '@/components/bacachito/Bacachito';
+import SpeechBubble from '@/components/bacachito/SpeechBubble';
+import { useBacachitoMood } from '@/hooks/useBacachitoMood';
+import { useBacachitoSpeech } from '@/hooks/useBacachitoSpeech';
 
 const Game: React.FC = () => {
   const navigate = useNavigate();
@@ -18,12 +23,46 @@ const Game: React.FC = () => {
     totalChallenges,
     prevChallenge,
     activeTimedCards,
-    removeTimedCard
+    removeTimedCard,
+    slangRegion,
+    currentChallengeIndex,
+    selectedMode,
+    shuffledChallenges,
   } = useGame();
   const [showAddPlayer, setShowAddPlayer] = useState(false);
   const [expandedTimedCard, setExpandedTimedCard] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [showSubGameModal, setShowSubGameModal] = useState(false);
+  const lastInteractionRef = useRef(Date.now());
+
+  // Track user interaction time
+  useEffect(() => {
+    lastInteractionRef.current = Date.now();
+  }, [currentChallenge]);
+
+  const {
+    mood: bacachitoMood,
+  } = useBacachitoMood({
+    currentCardIndex: currentChallengeIndex,
+    currentCard: currentChallenge,
+    totalCards: totalChallenges,
+    gameMode: selectedMode?.id ?? null,
+    gameStatus: isGameOver ? 'finished' : isPlaying ? 'playing' : 'idle',
+    lastInteractionTime: lastInteractionRef.current,
+  });
+
+  const isFirstCardEver = currentChallengeIndex === 0;
+  const isFirstExtreme = currentChallenge?.isExtreme === true && 
+    !shuffledChallenges.slice(0, currentChallengeIndex).some(c => c.isExtreme);
+
+  const { text: speechText, isVisible: speechVisible, triggerSpeech } = useBacachitoSpeech({
+    mood: bacachitoMood,
+    region: slangRegion,
+    cardIndex: currentChallengeIndex,
+    isFirstCard: isFirstCardEver,
+    isFirstExtreme,
+    isGameOver,
+  });
 
   // Don't auto-open subgame modal - let user choose
 
@@ -131,10 +170,15 @@ const Game: React.FC = () => {
             <span className="font-bold">{players.length}</span>
           </button>
         </div>
+
+        {/* Region Badge */}
+        <div className="absolute top-6 right-16 z-30">
+          <RegionBadge region={slangRegion} />
+        </div>
       </div>
 
       {/* Main Card Area */}
-      <div className="flex-1 flex items-center justify-center relative py-4">
+      <div className="flex-1 flex items-center justify-center py-4">
         {isGameOver ? (
           // Game Over Screen
           <motion.div
@@ -142,7 +186,9 @@ const Game: React.FC = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
-            <Trophy size={64} className="mx-auto mb-6 opacity-90" />
+            <div className="flex justify-center mb-4">
+              <Bacachito mood="celebrating" size="md" position="inline" isGameOver region={slangRegion} />
+            </div>
             <h2 className="heading-large mb-3">¡Partida terminada!</h2>
             <p className="body-large opacity-90 mb-2">
               {totalChallenges} retos completados
@@ -173,7 +219,26 @@ const Game: React.FC = () => {
             </div>
           </motion.div>
         ) : (
-          <StoryCard onOpenSubGame={() => setShowSubGameModal(true)} />
+          <div className="flex flex-col items-center w-full">
+            <div className="relative z-20 -mb-3">
+              <Bacachito
+                mood={bacachitoMood}
+                size="sm"
+                position="inline"
+                region={slangRegion}
+                cardIndex={currentChallengeIndex}
+                isFirstCard={isFirstCardEver}
+                isFirstExtreme={isFirstExtreme}
+                isGameOver={isGameOver}
+                showSpeech={false}
+                onTap={triggerSpeech}
+              />
+              <div className="absolute left-[85%] top-[20%] -translate-y-1/2 z-10">
+                <SpeechBubble text={speechText} isVisible={speechVisible} position="inline-right" />
+              </div>
+            </div>
+            <StoryCard onOpenSubGame={() => setShowSubGameModal(true)} />
+          </div>
         )}
       </div>
 

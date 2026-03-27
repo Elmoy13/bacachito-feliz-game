@@ -1,15 +1,27 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown } from 'lucide-react';
 import PlayerInput from '@/components/PlayerInput';
 import { useGame } from '@/context/GameContext';
+import { useCustomCards } from '@/hooks/useCustomCards';
+import CustomCardsSection from '@/components/custom-cards/CustomCardsSection';
+import RegionSelector from '@/components/setup/RegionSelector';
+import RegionPreviewCard from '@/components/setup/RegionPreviewCard';
+import Bacachito from '@/components/bacachito/Bacachito';
+import { REGIONS } from '@/types/slang';
 
 const Setup: React.FC = () => {
   const navigate = useNavigate();
-  const { players, startGame, gameModes, selectedMode, selectMode } = useGame();
+  const { players, startGame, gameModes, selectedMode, selectMode, customCardsConfig, setCustomCardsConfig, slangRegion, setSlangRegion } = useGame();
+  const { cards } = useCustomCards();
+  const [regionOpen, setRegionOpen] = useState(false);
+  const regionInfo = REGIONS.find((r) => r.id === slangRegion);
 
   const handleStartGame = () => {
     if (players.length >= 2 && selectedMode) {
+      // Update config with latest cards before starting
+      setCustomCardsConfig({ ...customCardsConfig, cards });
       startGame();
       navigate('/game');
     }
@@ -34,12 +46,22 @@ const Setup: React.FC = () => {
             Volver
           </button>
 
-          <h1 className="heading-large mb-2">
-            Arma tu peda
-          </h1>
-          <p className="body-regular text-muted-foreground">
-            Agrega jugadores y elige el modo de juego.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="heading-large mb-2">
+                Arma tu peda
+              </h1>
+              <p className="body-regular text-muted-foreground">
+                Agrega jugadores y elige el modo de juego.
+              </p>
+            </div>
+            <Bacachito
+              mood={players.length >= 4 ? 'excited' : 'happy'}
+              size="sm"
+              position="inline"
+              showSpeech={false}
+            />
+          </div>
         </motion.div>
 
         {/* Players Section */}
@@ -64,7 +86,7 @@ const Setup: React.FC = () => {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.15 }}
           className="mb-10"
         >
           <h2 className="heading-medium mb-4">
@@ -78,7 +100,7 @@ const Setup: React.FC = () => {
                   key={mode.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2 + index * 0.05 }}
+                  transition={{ delay: 0.15 + index * 0.05 }}
                   onClick={() => selectMode(mode.id)}
                   className={`card-mode flex items-center gap-4 text-left w-full ${
                     selectedMode?.id === mode.id ? 'selected' : ''
@@ -100,6 +122,80 @@ const Setup: React.FC = () => {
               );
             })}
           </div>
+        </motion.section>
+
+        {/* Slang Region Selection (collapsible) */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-10"
+        >
+          <button
+            onClick={() => setRegionOpen(!regionOpen)}
+            className="w-full flex items-center justify-between py-2 group"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-xl">{regionInfo?.emoji}</span>
+              <div className="text-left">
+                <h2 className="heading-medium">Slang: {regionInfo?.name}</h2>
+                <p className="body-small text-muted-foreground">
+                  Toca para cambiar la región
+                </p>
+              </div>
+            </div>
+            <motion.div
+              animate={{ rotate: regionOpen ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronDown size={20} className="text-muted-foreground" />
+            </motion.div>
+          </button>
+
+          <AnimatePresence>
+            {regionOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                className="overflow-hidden"
+              >
+                <div className="pt-3">
+                  <RegionSelector selected={slangRegion} onSelect={(r) => { setSlangRegion(r); setRegionOpen(false); }} />
+                  <RegionPreviewCard
+                    region={slangRegion}
+                    playerName={players[0]?.name}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.section>
+
+        {/* Custom Cards Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mb-10"
+        >
+          <CustomCardsSection
+            enabled={customCardsConfig.enabled}
+            onToggle={(enabled) => setCustomCardsConfig({ ...customCardsConfig, enabled })}
+            selectedPackIds={customCardsConfig.selectedPackIds}
+            onPackToggle={(packId) => {
+              const ids = customCardsConfig.selectedPackIds.includes(packId)
+                ? customCardsConfig.selectedPackIds.filter((id) => id !== packId)
+                : [...customCardsConfig.selectedPackIds, packId];
+              setCustomCardsConfig({ ...customCardsConfig, selectedPackIds: ids });
+            }}
+            includeNoPack={customCardsConfig.includeNoPack}
+            onIncludeNoPackToggle={(val) => setCustomCardsConfig({ ...customCardsConfig, includeNoPack: val })}
+            customCardCount={customCardsConfig.customCardCount}
+            onCustomCardCountChange={(count) => setCustomCardsConfig({ ...customCardsConfig, customCardCount: count })}
+            selectedModeId={selectedMode?.id || null}
+          />
         </motion.section>
 
         {/* Start Button */}

@@ -1,7 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useGame } from '@/context/GameContext';
-import { Clock, Zap, Target, Crown } from 'lucide-react';
+import { Clock, Zap, Target, Crown, Sparkles } from 'lucide-react';
+import ShareButton from '@/components/game/ShareButton';
+import RegionBadge from '@/components/game/RegionBadge';
+import { applySlang } from '@/utils/slangEngine';
 
 interface StoryCardProps {
   onOpenSubGame?: () => void;
@@ -13,7 +16,9 @@ const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
     nextChallenge, 
     prevChallenge,
     getProcessedText,
-    currentChallengeIndex
+    currentChallengeIndex,
+    selectedMode,
+    slangRegion
   } = useGame();
   
   const [direction, setDirection] = useState(0);
@@ -24,10 +29,10 @@ const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
   const processedContent = useMemo(() => {
     if (!currentChallenge) return { title: '', subtitle: '' };
     return {
-      title: getProcessedText(currentChallenge.template),
-      subtitle: currentChallenge.subtitle ? getProcessedText(currentChallenge.subtitle) : ''
+      title: applySlang(getProcessedText(currentChallenge.template), slangRegion),
+      subtitle: currentChallenge.subtitle ? applySlang(getProcessedText(currentChallenge.subtitle), slangRegion) : ''
     };
-  }, [currentChallenge, currentChallengeIndex, getProcessedText]);
+  }, [currentChallenge, currentChallengeIndex, getProcessedText, slangRegion]);
 
   // Handle timed challenges
   useEffect(() => {
@@ -64,6 +69,7 @@ const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
   const isTimed = currentChallenge.type === 'timed';
   const isCategory = currentChallenge.type === 'category';
   const hasSubGames = currentChallenge.hasSubGames;
+  const isCustom = currentChallenge.id.startsWith('custom-');
 
   const handleTap = (e: React.MouseEvent<HTMLDivElement>) => {
     // Si tiene subjuegos, no avanzar con tap (se deben usar los botones)
@@ -147,6 +153,7 @@ const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
 
   // Get badge text
   const getBadgeText = () => {
+    if (isCustom) return '✨ PERSONALIZADA';
     if (isExtreme) return 'EXTREMO';
     if (isPower) return 'PODER';
     if (isTimed) return 'TIEMPO';
@@ -183,6 +190,13 @@ const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
           onDragEnd={handleDragEnd}
           className={getCardClass()}
         >
+          {/* Share button */}
+          <ShareButton
+            challenge={currentChallenge}
+            processedText={processedContent.title}
+            gameMode={selectedMode?.id || 'unknown'}
+          />
+
           {/* Badge for card type */}
           {getBadgeText() && (
             <motion.div

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { PenLine, Globe } from 'lucide-react';
 import Blob from '@/components/Blob';
 
 const Landing: React.FC = () => {
@@ -67,6 +68,31 @@ const Landing: React.FC = () => {
           whileTap={{ scale: 0.98 }}
         >
           Iniciar Peda
+        </motion.button>
+
+        <motion.button
+          onClick={() => navigate('/multiplayer/create')}
+          className="btn-ghost mt-4 mx-auto flex items-center gap-2 text-sm"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0, duration: 0.8 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Globe size={14} />
+          Peda Remota
+        </motion.button>
+
+        <motion.button
+          onClick={() => navigate('/mis-cartas')}
+          className="flex items-center gap-2 mx-auto mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1, duration: 0.8 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <PenLine size={14} />
+          Mis cartas personalizadas
         </motion.button>
 
         <motion.p

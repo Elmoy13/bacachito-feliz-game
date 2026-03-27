@@ -1,10 +1,15 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
-import { getAnalytics, isSupported } from 'firebase/analytics';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getAnalytics, isSupported, logEvent } from 'firebase/analytics';
+import { getAuth, signInAnonymously, onAuthStateChanged, type User } from 'firebase/auth';
+import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDmi6_5t3gvC8wcaTraz6XQ0LJyMuV_FB0",
   authDomain: "qlosino-6f549.firebaseapp.com",
+  // NOTE: Enable Realtime Database in Firebase Console → Realtime Database → Create Database
+  // Then copy the databaseURL here. Format: https://<project-id>-default-rtdb.<region>.firebasedatabase.app
+  databaseURL: "https://qlosino-6f549-default-rtdb.firebaseio.com",
   projectId: "qlosino-6f549",
   storageBucket: "qlosino-6f549.firebasestorage.app",
   messagingSenderId: "158942132246",
@@ -14,14 +19,33 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+});
+const auth = getAuth(app);
+const rtdb = getDatabase(app);
 
 // Initialize Analytics only if supported
+let analyticsInstance: ReturnType<typeof getAnalytics> | null = null;
 isSupported().then((supported) => {
   if (supported) {
-    getAnalytics(app);
+    analyticsInstance = getAnalytics(app);
   }
 });
+
+// NOTE: Firebase Anonymous Auth must be enabled in the Firebase Console:
+// Authentication → Sign-in method → Anonymous → Enable
+
+// Analytics helper
+export const trackEvent = (eventName: string, params?: Record<string, any>) => {
+  try {
+    if (analyticsInstance) {
+      logEvent(analyticsInstance, eventName, params);
+    }
+  } catch {
+    // Analytics is non-critical
+  }
+};
 
 // Game session interface
 export interface GameSession {
@@ -49,4 +73,4 @@ export const saveGameSession = async (players: string[], gameMode: string): Prom
   }
 };
 
-export { db, collection, getDocs };
+export { db, rtdb, auth, collection, getDocs, signInAnonymously, onAuthStateChanged, type User };

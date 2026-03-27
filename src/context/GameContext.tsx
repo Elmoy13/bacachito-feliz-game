@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useRef } from 'react';
 import { Player, Challenge } from '@/types/game';
 import { gameModes, getChallengesByMode, GameMode } from '@/data/challenges';
-import { saveGameSession } from '@/lib/firebase';
+import { saveGameSession, trackEvent } from '@/lib/firebase';
+import { incrementGamesPlayed } from '@/components/pwa/InstallPrompt';
+import type { CustomCard } from '@/types/customCards';
+import type { SlangRegion } from '@/types/slang';
+import { DEFAULT_REGION, SLANG_STORAGE_KEY } from '@/types/slang';
 
 export interface ActiveTimedCard {
   challenge: Challenge;
@@ -9,6 +13,14 @@ export interface ActiveTimedCard {
   duration: number;
   processedText: string;
   cardIndex: number; // Agregamos índice para identificar cartas únicas
+}
+
+export interface CustomCardsConfig {
+  enabled: boolean;
+  selectedPackIds: string[];
+  includeNoPack: boolean;
+  customCardCount: number;
+  cards: CustomCard[];
 }
 
 interface GameContextType {
@@ -22,6 +34,10 @@ interface GameContextType {
   selectedMode: GameMode | null;
   gameModes: GameMode[];
   activeTimedCards: ActiveTimedCard[];
+  customCardsConfig: CustomCardsConfig;
+  setCustomCardsConfig: (config: CustomCardsConfig) => void;
+  slangRegion: SlangRegion;
+  setSlangRegion: (region: SlangRegion) => void;
   addPlayer: (name: string) => void;
   removePlayer: (id: string) => void;
   selectMode: (modeId: string) => void;
@@ -158,6 +174,25 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isGameOver, setIsGameOver] = useState(false);
   const [selectedMode, setSelectedMode] = useState<GameMode | null>(null);
   const [activeTimedCards, setActiveTimedCards] = useState<ActiveTimedCard[]>([]);
+  const [customCardsConfig, setCustomCardsConfig] = useState<CustomCardsConfig>({
+    enabled: false,
+    selectedPackIds: [],
+    includeNoPack: true,
+    customCardCount: 15,
+    cards: [],
+  });
+  const [slangRegion, setSlangRegionState] = useState<SlangRegion>(() => {
+    try {
+      return (localStorage.getItem(SLANG_STORAGE_KEY) as SlangRegion) || DEFAULT_REGION;
+    } catch {
+      return DEFAULT_REGION;
+    }
+  });
+
+  const setSlangRegion = useCallback((region: SlangRegion) => {
+    setSlangRegionState(region);
+    try { localStorage.setItem(SLANG_STORAGE_KEY, region); } catch { /* ignore */ }
+  }, []);
   
   // Keep track of used player combinations to avoid repeats
   const usedPlayersRef = useRef<Set<string>>(new Set());
@@ -218,16 +253,90 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (players.length >= 2 && selectedMode) {
       const challenges = getChallengesByMode(selectedMode.id);
       
-      // Siempre usar 60 cartas para todas las partidas
-      const challengeCount = Math.min(60, challenges.length);
-      const selectedChallenges = selectBalancedChallenges(challenges, challengeCount);
+      // Determine custom cards to include
+      let customChallenges: Challenge[] = [];
+      let customCount = 0;
       
-      setShuffledChallenges(selectedChallenges);
+      if (customCardsConfig.enabled && customCardsConfig.cards.length > 0) {
+        // Filter cards by selected packs
+        let pool = customCardsConfig.cards.filter((c) => {
+          if (customCardsConfig.includeNoPack && !c.packId) return true;
+          if (c.packId && customCardsConfig.selectedPackIds.includes(c.packId)) return true;
+          return false;
+        });
+        
+        // Filter by current game mode
+        pool = pool.filter((c) => {
+          if (!c.modes || c.modes.length === 0) return true; // no modes = all modes
+          return c.modes.includes(selectedMode.id);
+        });
+        
+        // Weighted selection based on probability
+        // probability 1 (Baja) = weight 1, probability 2 (Normal) = weight 2, probability 3 (Alta) = weight 4
+        const probabilityWeights: Record<number, number> = { 1: 1, 2: 2, 3: 4 };
+        
+        // Build weighted pool: repeat cards based on their probability weight
+        const weightedPool: typeof pool = [];
+        pool.forEach((card) => {
+          const weight = probabilityWeights[card.probability || 2];
+          for (let i = 0; i < weight; i++) {
+            weightedPool.push(card);
+          }
+        });
+        
+        // Shuffle weighted pool and pick unique cards up to customCardCount
+        const shuffledWeighted = shuffleArray(weightedPool);
+        const pickedIds = new Set<string>();
+        const pickedCards: typeof pool = [];
+        
+        for (const card of shuffledWeighted) {
+          if (pickedIds.has(card.id)) continue;
+          pickedIds.add(card.id);
+          pickedCards.push(card);
+          if (pickedCards.length >= customCardsConfig.customCardCount) break;
+        }
+        
+        customCount = pickedCards.length;
+        
+        // Convert CustomCard to Challenge
+        customChallenges = pickedCards.map((cc) => ({
+          id: `custom-${cc.id}`,
+          type: cc.type,
+          template: cc.text,
+          duration: cc.timerSeconds,
+          isExtreme: cc.type === 'extreme',
+          isPower: cc.type === 'power',
+          isCustom: true,
+        } as Challenge & { isCustom: boolean }));
+      }
+      
+      // Reduce base cards proportionally to make room for custom
+      // Random card count between 30-40 per game
+      const totalTarget = 30 + Math.floor(Math.random() * 11);
+      const baseCount = Math.min(totalTarget - customCount, challenges.length);
+      const selectedChallenges = selectBalancedChallenges(challenges, baseCount);
+      
+      // Merge and shuffle
+      const allChallenges = shuffleArray([...selectedChallenges, ...customChallenges]);
+      
+      setShuffledChallenges(allChallenges);
       setCurrentChallengeIndex(0);
       setIsPlaying(true);
       setIsGameOver(false);
       setActiveTimedCards([]);
       usedPlayersRef.current.clear();
+      
+      // Track custom cards analytics
+      if (customCount > 0) {
+        trackEvent('custom_cards_used_in_game', {
+          custom_card_count: customCount,
+          total_cards: allChallenges.length,
+          mode: selectedMode.id,
+        });
+      }
+
+      // Track slang region
+      trackEvent('slang_region_distribution', { region: slangRegion });
       
       // Save game session to Firebase silently
       try {
@@ -238,7 +347,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Error al guardar la partida:', error);
       }
     }
-  }, [players, selectedMode]);
+  }, [players, selectedMode, customCardsConfig, slangRegion]);
 
   const nextChallenge = useCallback(() => {
     // Si la carta actual es timed, agregarla a las cartas activas
@@ -262,6 +371,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     if (currentChallengeIndex >= shuffledChallenges.length - 1) {
       setIsGameOver(true);
+      incrementGamesPlayed();
     } else {
       setCurrentChallengeIndex(prev => prev + 1);
     }
@@ -304,6 +414,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     selectedMode,
     gameModes,
     activeTimedCards,
+    customCardsConfig,
+    setCustomCardsConfig,
+    slangRegion,
+    setSlangRegion,
     addPlayer,
     removePlayer,
     selectMode,
