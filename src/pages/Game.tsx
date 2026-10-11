@@ -6,6 +6,8 @@ import StoryCard from '@/components/StoryCard';
 import PlayerInput from '@/components/PlayerInput';
 import { SubGameModal } from '@/components/SubGameModal';
 import { useGame } from '@/context/GameContext';
+import { useAuth } from '@/context/AuthContext';
+import PaywallModal from '@/components/premium/PaywallModal';
 import RegionBadge from '@/components/game/RegionBadge';
 import Bacachito from '@/components/bacachito/Bacachito';
 import SpeechBubble from '@/components/bacachito/SpeechBubble';
@@ -29,11 +31,26 @@ const Game: React.FC = () => {
     selectedMode,
     shuffledChallenges,
   } = useGame();
+  const { isPremium, isAuthenticated, openAuthModal } = useAuth();
   const [showAddPlayer, setShowAddPlayer] = useState(false);
   const [expandedTimedCard, setExpandedTimedCard] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [showSubGameModal, setShowSubGameModal] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const lastInteractionRef = useRef(Date.now());
+
+  // Mini-juegos son premium: anónimos -> login, autenticados sin premium -> paywall
+  const handleOpenSubGame = () => {
+    if (!isPremium) {
+      if (isAuthenticated) {
+        setShowPaywall(true);
+      } else {
+        openAuthModal();
+      }
+      return;
+    }
+    setShowSubGameModal(true);
+  };
 
   // Track user interaction time
   useEffect(() => {
@@ -107,6 +124,7 @@ const Game: React.FC = () => {
   const isPower = currentChallenge?.isPower;
   const isTimed = currentChallenge?.type === 'timed';
   const isCategory = currentChallenge?.type === 'category';
+  const isPrefieres = currentChallenge?.type === 'prefieres';
 
   // Get background color based on card type
   const getBgClass = () => {
@@ -114,6 +132,7 @@ const Game: React.FC = () => {
     if (isPower) return 'bg-gradient-to-br from-purple-600 to-purple-800';
     if (isTimed) return 'bg-gradient-to-br from-amber-500 to-orange-600';
     if (isCategory) return 'bg-gradient-to-br from-blue-500 to-blue-700';
+    if (isPrefieres) return 'bg-gradient-to-br from-emerald-500 to-teal-700';
     return 'bg-gradient-to-br from-primary to-blue-700';
   };
 
@@ -237,7 +256,7 @@ const Game: React.FC = () => {
                 <SpeechBubble text={speechText} isVisible={speechVisible} position="inline-right" />
               </div>
             </div>
-            <StoryCard onOpenSubGame={() => setShowSubGameModal(true)} />
+            <StoryCard onOpenSubGame={handleOpenSubGame} />
           </div>
         )}
       </div>
@@ -343,6 +362,11 @@ const Game: React.FC = () => {
           onClose={() => setShowSubGameModal(false)}
           availableGames={currentChallenge.subGames}
         />
+      )}
+
+      {/* Paywall para mini-juegos premium */}
+      {showPaywall && (
+        <PaywallModal onClose={() => setShowPaywall(false)} trigger="mode_select" />
       )}
     </motion.div>
   );

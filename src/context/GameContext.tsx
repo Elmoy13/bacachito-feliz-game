@@ -72,8 +72,43 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return shuffled;
 };
 
+// Historial de cartas entre partidas para evitar repeticiones
+const CARD_HISTORY_KEY = 'bcf_card_history';
+const HISTORY_GAMES = 2; // Número de partidas recientes a recordar
+
+const loadRecentHistory = (): Set<string> => {
+  try {
+    const raw = localStorage.getItem(CARD_HISTORY_KEY);
+    if (!raw) return new Set();
+    const ids: string[] = JSON.parse(raw);
+    return new Set(ids);
+  } catch {
+    return new Set();
+  }
+};
+
+const saveHistory = (ids: string[]) => {
+  try {
+    const raw = localStorage.getItem(CARD_HISTORY_KEY);
+    const previous: string[] = raw ? JSON.parse(raw) : [];
+    // Guardar solo las cartas de las últimas HISTORY_GAMES partidas (~50 cartas por partida)
+    const updated = [...ids, ...previous].slice(0, HISTORY_GAMES * 50);
+    localStorage.setItem(CARD_HISTORY_KEY, JSON.stringify(updated));
+  } catch { /* ignore */ }
+};
+
+// Tipos "normales" (no especiales). Se usan para completar la partida si faltan cartas.
+const NORMAL_TYPES: string[] = ['direct', 'group', 'category', 'vote', 'random', 'prefieres'];
+// Tipos que la carta con subjuegos puede reemplazar (nunca 'prefieres' ni especiales)
+const SUBGAME_REPLACEABLE_TYPES: string[] = ['direct', 'group', 'category', 'vote', 'random'];
+
 // Selecciona un subset aleatorio y balanceado de cartas
-const selectBalancedChallenges = (challenges: Challenge[], count: number = 40): Challenge[] => {
+// Exportada solo para pruebas unitarias
+export const selectBalancedChallenges = (
+  challenges: Challenge[],
+  count: number = 40,
+  recentIds: Set<string> = new Set()
+): Challenge[] => {
   // Separar por tipos para balance
   const byType: Record<string, Challenge[]> = {};
   
@@ -85,9 +120,11 @@ const selectBalancedChallenges = (challenges: Challenge[], count: number = 40): 
     byType[type].push(challenge);
   });
   
-  // Mezclar cada tipo independientemente
+  // Mezclar cada tipo independientemente, priorizando cartas no vistas recientemente
   Object.keys(byType).forEach(type => {
-    byType[type] = shuffleArray(byType[type]);
+    const unseen = shuffleArray(byType[type].filter(c => !recentIds.has(c.id)));
+    const seen = shuffleArray(byType[type].filter(c => recentIds.has(c.id)));
+    byType[type] = [...unseen, ...seen];
   });
   
   const selected: Challenge[] = [];
@@ -103,23 +140,26 @@ const selectBalancedChallenges = (challenges: Challenge[], count: number = 40): 
   const specialTotal = 1 - normalTotal;
   
   // Distribuir cartas normales con variación
-  const directPct = randomVariation(0.20, 0.03);
-  const groupPct = randomVariation(0.18, 0.03);
-  const categoryPct = randomVariation(0.15, 0.03);
-  const votePct = randomVariation(0.10, 0.02);
-  const randomPct = randomVariation(0.07, 0.02);
+  // 'prefieres' ≈ 12% de las normales; el resto se reescaló proporcionalmente (suma = 0.70)
+  const directPct = randomVariation(0.176, 0.03);
+  const groupPct = randomVariation(0.158, 0.03);
+  const categoryPct = randomVariation(0.132, 0.03);
+  const votePct = randomVariation(0.088, 0.02);
+  const randomPct = randomVariation(0.062, 0.02);
+  const prefieresPct = randomVariation(0.084, 0.02);
   
   // Distribuir cartas especiales con variación
   const timedPct = randomVariation(0.10, 0.03);
   const powerPct = randomVariation(0.10, 0.03);
   const extremePct = randomVariation(0.10, 0.03);
   
-  const distribution = {
+  const distribution: Record<string, number> = {
     'direct': Math.floor(count * directPct * normalTotal),
     'group': Math.floor(count * groupPct * normalTotal),
     'category': Math.floor(count * categoryPct * normalTotal),
     'vote': Math.floor(count * votePct * normalTotal),
     'random': Math.floor(count * randomPct * normalTotal),
+    'prefieres': Math.floor(count * prefieresPct * normalTotal),
     'timed': Math.floor(count * timedPct * specialTotal),
     'power': Math.floor(count * powerPct * specialTotal),
     'extreme': Math.floor(count * extremePct * specialTotal),
@@ -135,11 +175,12 @@ const selectBalancedChallenges = (challenges: Challenge[], count: number = 40): 
   
   // Si no alcanzamos el count, completar con cartas normales prioritariamente
   if (selected.length < count) {
-    const normalTypes = ['direct', 'group', 'category', 'vote', 'random'];
     const remaining = challenges.filter(c => 
-      !selected.includes(c) && normalTypes.includes(c.type)
+      !selected.includes(c) && NORMAL_TYPES.includes(c.type)
     );
-    const shuffledRemaining = shuffleArray(remaining);
+    const unseenRemaining = shuffleArray(remaining.filter(c => !recentIds.has(c.id)));
+    const seenRemaining = shuffleArray(remaining.filter(c => recentIds.has(c.id)));
+    const shuffledRemaining = [...unseenRemaining, ...seenRemaining];
     const needed = count - selected.length;
     selected.push(...shuffledRemaining.slice(0, needed));
   }
@@ -152,9 +193,9 @@ const selectBalancedChallenges = (challenges: Challenge[], count: number = 40): 
     if (subGameCards.length > 0) {
       // Seleccionar una al azar
       const randomSubGameCard = subGameCards[Math.floor(Math.random() * subGameCards.length)];
-      // Reemplazar una carta normal aleatoria (que no sea especial)
+      // Reemplazar una carta normal aleatoria (que no sea especial ni 'prefieres')
       const normalCardIndex = selected.findIndex(c => 
-        ['direct', 'group', 'category', 'vote', 'random'].includes(c.type) && !c.hasSubGames
+        SUBGAME_REPLACEABLE_TYPES.includes(c.type) && !c.hasSubGames
       );
       if (normalCardIndex !== -1) {
         selected[normalCardIndex] = randomSubGameCard;
@@ -241,9 +282,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     // Replace {player2} with a different player than those already used
+    // (todas las apariciones de {player2} son la misma persona)
     if (text.includes('{player2}')) {
       const player2 = getRandomPlayer(usedNames);
-      text = text.replace('{player2}', player2?.name || 'Otro');
+      text = text.split('{player2}').join(player2?.name || 'Otro');
     }
     
     return text;
@@ -314,11 +356,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Random card count between 30-40 per game
       const totalTarget = 30 + Math.floor(Math.random() * 11);
       const baseCount = Math.min(totalTarget - customCount, challenges.length);
-      const selectedChallenges = selectBalancedChallenges(challenges, baseCount);
+      const recentIds = loadRecentHistory();
+      const selectedChallenges = selectBalancedChallenges(challenges, baseCount, recentIds);
       
       // Merge and shuffle
       const allChallenges = shuffleArray([...selectedChallenges, ...customChallenges]);
       
+      // Guardar historial para evitar repetir cartas en las próximas partidas
+      saveHistory(allChallenges.map(c => c.id));
+
       setShuffledChallenges(allChallenges);
       setCurrentChallengeIndex(0);
       setIsPlaying(true);
@@ -341,11 +387,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Save game session to Firebase silently
       try {
         const playerNames = players.map(p => p.name);
-        const sessionId = await saveGameSession(playerNames, selectedMode.name);
-        console.log('Partida iniciada y guardada:', sessionId);
-      } catch (error) {
-        console.error('Error al guardar la partida:', error);
-      }
+        await saveGameSession(playerNames, selectedMode.name);
+      } catch { /* ignore */ }
     }
   }, [players, selectedMode, customCardsConfig, slangRegion]);
 

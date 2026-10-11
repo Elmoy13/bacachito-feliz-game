@@ -1,12 +1,11 @@
 import React from 'react';
-import { ChallengeType } from '@/types/game';
 import { getShareableGradient, getShareableBadgeText, getCardTypeEmoji } from '@/utils/shareUtils';
-import type { CardIntensity } from '@/types/customCards';
+import type { CardIntensity, CustomCardType } from '@/types/customCards';
 import { INTENSITY_LABELS } from '@/types/customCards';
 
 interface CardPreviewProps {
   text: string;
-  type: ChallengeType;
+  type: CustomCardType;
   intensity: CardIntensity;
   isExtreme?: boolean;
   isPower?: boolean;

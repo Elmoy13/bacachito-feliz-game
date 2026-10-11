@@ -33,6 +33,10 @@ export interface ResolvedCard {
   duration?: number;
   hasSubGames?: boolean;
   isCustom?: boolean;
+  // Solo para type 'prefieres' (ya resueltas con nombres)
+  optionA?: string; // 👍
+  optionB?: string; // 👎
+  sips?: number; // Tragos que toma la minoría
 }
 
 export interface ActiveTimer {

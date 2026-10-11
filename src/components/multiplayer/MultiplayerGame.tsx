@@ -16,6 +16,7 @@ import FloatingReactions from './FloatingReactions';
 import VotePanel from './VotePanel';
 import HostDisconnected from './HostDisconnected';
 import RegionBadge from '@/components/game/RegionBadge';
+import PrefieresContent from '@/components/game/PrefieresContent';
 
 const MultiplayerGame: React.FC = () => {
   const { roomCode } = useParams<{ roomCode: string }>();
@@ -63,6 +64,15 @@ const MultiplayerGame: React.FC = () => {
   );
   const displaySubtitle = useMemo(
     () => (currentCard?.subtitle ? applySlang(currentCard.subtitle, roomSlangRegion) : ''),
+    [currentCard, roomSlangRegion]
+  );
+  // Opciones de cartas "¿Qué prefieres?"
+  const displayOptionA = useMemo(
+    () => (currentCard?.optionA ? applySlang(currentCard.optionA, roomSlangRegion) : ''),
+    [currentCard, roomSlangRegion]
+  );
+  const displayOptionB = useMemo(
+    () => (currentCard?.optionB ? applySlang(currentCard.optionB, roomSlangRegion) : ''),
     [currentCard, roomSlangRegion]
   );
 
@@ -159,6 +169,7 @@ const MultiplayerGame: React.FC = () => {
     if (card.isPower) return 'card-game card-game-power';
     if (card.type === 'timed') return 'card-game card-game-timed';
     if (card.type === 'category') return 'card-game card-game-category';
+    if (card.type === 'prefieres') return 'card-game card-game-prefieres';
     return 'card-game card-game-normal';
   };
 
@@ -168,6 +179,7 @@ const MultiplayerGame: React.FC = () => {
     if (card.isPower) return 'PODER';
     if (card.type === 'timed') return 'TIEMPO';
     if (card.type === 'category') return 'CATEGORÍA';
+    if (card.type === 'prefieres') return '🤔 ¿QUÉ PREFIERES?';
     return null;
   };
 
@@ -309,15 +321,26 @@ const MultiplayerGame: React.FC = () => {
               </motion.div>
             )}
 
-            {/* Main text */}
-            <motion.h2
-              className="heading-card mb-6 leading-tight px-2"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-            >
-              {displayText}
-            </motion.h2>
+            {/* "¿Qué prefieres?": dos opciones + regla de la minoría */}
+            {currentCard.type === 'prefieres' ? (
+              <PrefieresContent
+                title={displayText}
+                optionA={displayOptionA}
+                optionB={displayOptionB}
+                sips={currentCard.sips}
+                resetKey={currentCard.id + currentIndex}
+              />
+            ) : (
+              /* Main text */
+              <motion.h2
+                className="heading-card mb-6 leading-tight px-2"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+              >
+                {displayText}
+              </motion.h2>
+            )}
 
             {/* Subtitle */}
             {displaySubtitle && (

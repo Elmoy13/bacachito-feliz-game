@@ -36,6 +36,8 @@ function getMoodFromCard(card: Challenge | null): BacachitoMood {
       return 'thinking';
     case 'random':
       return 'happy';
+    case 'prefieres':
+      return 'thinking';
     case 'timed':
       return 'dizzy';
     case 'power': {

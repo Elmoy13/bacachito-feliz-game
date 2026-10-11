@@ -159,6 +159,7 @@ export const getCardTypeEmoji = (type: string, isExtreme?: boolean, isPower?: bo
     case 'vote': return '🗳️';
     case 'direct': return '🎲';
     case 'random': return '🎰';
+    case 'prefieres': return '🤔';
     default: return '🍾';
   }
 };
@@ -172,6 +173,7 @@ export const getShareableGradient = (type: string, isExtreme?: boolean, isPower?
   switch (type) {
     case 'timed': return 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
     case 'category': return 'linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)';
+    case 'prefieres': return 'linear-gradient(135deg, #10b981 0%, #0f766e 100%)';
     default: return 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)';
   }
 };
@@ -187,6 +189,7 @@ export const getShareableBadgeText = (type: string, isExtreme?: boolean, isPower
     case 'category': return 'CATEGORÍA';
     case 'group': return 'GRUPAL';
     case 'vote': return 'VOTACIÓN';
+    case 'prefieres': return 'QUÉ PREFIERES';
     default: return null;
   }
 };

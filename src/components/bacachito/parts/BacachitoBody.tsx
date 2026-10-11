@@ -15,7 +15,6 @@ const BacachitoBody: React.FC<BacachitoBodyProps> = ({ mood, reducedMotion, chil
     <motion.g
       transform="translate(100, 140)"
       animate={anim}
-      style={{ willChange: 'transform' }}
     >
       {/* Body outline stroke */}
       <path

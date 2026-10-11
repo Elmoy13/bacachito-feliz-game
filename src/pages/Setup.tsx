@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, Lock } from 'lucide-react';
 import PlayerInput from '@/components/PlayerInput';
 import { useGame } from '@/context/GameContext';
 import { useCustomCards } from '@/hooks/useCustomCards';
@@ -10,13 +10,32 @@ import RegionSelector from '@/components/setup/RegionSelector';
 import RegionPreviewCard from '@/components/setup/RegionPreviewCard';
 import Bacachito from '@/components/bacachito/Bacachito';
 import { REGIONS } from '@/types/slang';
+import { useAuth } from '@/context/AuthContext';
+import { isPremiumMode } from '@/config/premium';
+import PremiumBadge from '@/components/premium/PremiumBadge';
+import UserMenu from '@/components/auth/UserMenu';
+import PaywallModal from '@/components/premium/PaywallModal';
 
 const Setup: React.FC = () => {
   const navigate = useNavigate();
   const { players, startGame, gameModes, selectedMode, selectMode, customCardsConfig, setCustomCardsConfig, slangRegion, setSlangRegion } = useGame();
   const { cards } = useCustomCards();
+  const { isPremium, isAuthenticated, openAuthModal } = useAuth();
   const [regionOpen, setRegionOpen] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const regionInfo = REGIONS.find((r) => r.id === slangRegion);
+
+  const handleSelectMode = (modeId: string) => {
+    if (isPremiumMode(modeId) && !isPremium) {
+      if (isAuthenticated) {
+        setShowPaywall(true);
+      } else {
+        openAuthModal();
+      }
+      return;
+    }
+    selectMode(modeId);
+  };
 
   const handleStartGame = () => {
     if (players.length >= 2 && selectedMode) {
@@ -31,6 +50,11 @@ const Setup: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background px-6 py-8">
+      {/* User menu */}
+      <div className="absolute top-4 right-4 z-50">
+        <UserMenu />
+      </div>
+
       <div className="max-w-md mx-auto">
         {/* Header */}
         <motion.div 
@@ -95,29 +119,35 @@ const Setup: React.FC = () => {
           <div className="grid gap-3">
             {gameModes.map((mode, index) => {
               const IconComponent = mode.icon;
+              const locked = isPremiumMode(mode.id) && !isPremium;
               return (
                 <motion.button
                   key={mode.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.15 + index * 0.05 }}
-                  onClick={() => selectMode(mode.id)}
+                  onClick={() => handleSelectMode(mode.id)}
                   className={`card-mode flex items-center gap-4 text-left w-full ${
                     selectedMode?.id === mode.id ? 'selected' : ''
-                  }`}
+                  } ${locked ? 'opacity-70' : ''}`}
                 >
                   <div className={`mode-icon ${mode.bgColor}`}>
                     <IconComponent size={24} className="text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{mode.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-foreground">{mode.name}</h3>
+                      {locked && <PremiumBadge />}
+                    </div>
                     <p className="body-small text-muted-foreground">{mode.description}</p>
                   </div>
-                  {selectedMode?.id === mode.id && (
+                  {locked ? (
+                    <Lock size={16} className="text-muted-foreground" />
+                  ) : selectedMode?.id === mode.id ? (
                     <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
                       <Check size={14} className="text-primary-foreground" />
                     </div>
-                  )}
+                  ) : null}
                 </motion.button>
               );
             })}
@@ -182,18 +212,33 @@ const Setup: React.FC = () => {
         >
           <CustomCardsSection
             enabled={customCardsConfig.enabled}
-            onToggle={(enabled) => setCustomCardsConfig({ ...customCardsConfig, enabled })}
+            onToggle={(enabled) => {
+              if (!isPremium) {
+                if (isAuthenticated) {
+                  setShowPaywall(true);
+                } else {
+                  openAuthModal();
+                }
+                return;
+              }
+              setCustomCardsConfig({ ...customCardsConfig, enabled });
+            }}
             selectedPackIds={customCardsConfig.selectedPackIds}
             onPackToggle={(packId) => {
+              if (!isPremium) return;
               const ids = customCardsConfig.selectedPackIds.includes(packId)
                 ? customCardsConfig.selectedPackIds.filter((id) => id !== packId)
                 : [...customCardsConfig.selectedPackIds, packId];
               setCustomCardsConfig({ ...customCardsConfig, selectedPackIds: ids });
             }}
             includeNoPack={customCardsConfig.includeNoPack}
-            onIncludeNoPackToggle={(val) => setCustomCardsConfig({ ...customCardsConfig, includeNoPack: val })}
+            onIncludeNoPackToggle={(val) => {
+              if (isPremium) setCustomCardsConfig({ ...customCardsConfig, includeNoPack: val });
+            }}
             customCardCount={customCardsConfig.customCardCount}
-            onCustomCardCountChange={(count) => setCustomCardsConfig({ ...customCardsConfig, customCardCount: count })}
+            onCustomCardCountChange={(count) => {
+              if (isPremium) setCustomCardsConfig({ ...customCardsConfig, customCardCount: count });
+            }}
             selectedModeId={selectedMode?.id || null}
           />
         </motion.section>
@@ -218,6 +263,10 @@ const Setup: React.FC = () => {
           </button>
         </motion.div>
       </div>
+
+      {showPaywall && (
+        <PaywallModal onClose={() => setShowPaywall(false)} trigger="mode_select" />
+      )}
     </div>
   );
 };

@@ -1,8 +1,8 @@
 import React from 'react';
-import { ChallengeType } from '@/types/game';
+import type { CustomCardType } from '@/types/customCards';
 import { Zap, Users, Target, Vote, Shuffle, Clock, Crown, Flame } from 'lucide-react';
 
-const TYPE_CONFIG: Record<ChallengeType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
+const TYPE_CONFIG: Record<CustomCardType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
   direct: { label: 'Directo', icon: Zap, color: 'text-blue-400', bg: 'bg-blue-500/20' },
   group: { label: 'Grupal', icon: Users, color: 'text-green-400', bg: 'bg-green-500/20' },
   category: { label: 'Categoría', icon: Target, color: 'text-cyan-400', bg: 'bg-cyan-500/20' },
@@ -14,14 +14,14 @@ const TYPE_CONFIG: Record<ChallengeType, { label: string; icon: React.ElementTyp
 };
 
 interface TypeSelectorProps {
-  value: ChallengeType;
-  onChange: (type: ChallengeType) => void;
+  value: CustomCardType;
+  onChange: (type: CustomCardType) => void;
 }
 
 const TypeSelector: React.FC<TypeSelectorProps> = ({ value, onChange }) => {
   return (
     <div className="grid grid-cols-4 gap-2">
-      {(Object.entries(TYPE_CONFIG) as [ChallengeType, typeof TYPE_CONFIG[ChallengeType]][]).map(
+      {(Object.entries(TYPE_CONFIG) as [CustomCardType, typeof TYPE_CONFIG[CustomCardType]][]).map(
         ([type, config]) => {
           const Icon = config.icon;
           const isSelected = value === type;
