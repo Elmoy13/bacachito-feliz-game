@@ -4,6 +4,7 @@ import { gameModes, getChallengesByMode } from '@/data/challenges';
 import { trackEvent } from '@/lib/firebase';
 import type { Challenge } from '@/types/game';
 import type { ResolvedCard, RoomPlayer } from '@/types/multiplayer';
+import { resolvePrefieresTexts } from '@/utils/prefieres';
 import {
   createRoom as createRoomService,
   startMultiplayerGame,
@@ -68,9 +69,10 @@ function resolveTemplate(template: string, playerNames: string[]): string {
     used.push(name);
     text = text.replace('{player}', name);
   }
+  // Todas las apariciones de {player2} son la misma persona
   if (text.includes('{player2}')) {
     const name = pickPlayer(used);
-    text = text.replace('{player2}', name);
+    text = text.split('{player2}').join(name);
   }
 
   return text;
@@ -110,6 +112,19 @@ export function useRoomHost() {
         if (c.isPower) card.isPower = true;
         if (c.duration) card.duration = c.duration;
         if (c.hasSubGames) card.hasSubGames = true;
+        if (c.type === 'prefieres') {
+          // Título y opciones juntos para no repetir jugadores entre 👍 y 👎
+          const resolved = resolvePrefieresTexts(
+            (t) => resolveTemplate(t, playerNames),
+            c.template,
+            c.optionA,
+            c.optionB
+          );
+          card.text = resolved.title;
+          if (resolved.optionA) card.optionA = resolved.optionA;
+          if (resolved.optionB) card.optionB = resolved.optionB;
+          if (typeof c.sips === 'number') card.sips = c.sips;
+        }
         return card;
       });
 

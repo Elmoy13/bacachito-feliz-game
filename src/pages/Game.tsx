@@ -124,6 +124,7 @@ const Game: React.FC = () => {
   const isPower = currentChallenge?.isPower;
   const isTimed = currentChallenge?.type === 'timed';
   const isCategory = currentChallenge?.type === 'category';
+  const isPrefieres = currentChallenge?.type === 'prefieres';
 
   // Get background color based on card type
   const getBgClass = () => {
@@ -131,6 +132,7 @@ const Game: React.FC = () => {
     if (isPower) return 'bg-gradient-to-br from-purple-600 to-purple-800';
     if (isTimed) return 'bg-gradient-to-br from-amber-500 to-orange-600';
     if (isCategory) return 'bg-gradient-to-br from-blue-500 to-blue-700';
+    if (isPrefieres) return 'bg-gradient-to-br from-emerald-500 to-teal-700';
     return 'bg-gradient-to-br from-primary to-blue-700';
   };
 

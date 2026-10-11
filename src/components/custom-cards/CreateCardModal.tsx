@@ -1,8 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertTriangle } from 'lucide-react';
-import { ChallengeType } from '@/types/game';
-import type { CustomCard, CustomPack, CardIntensity, CardProbability } from '@/types/customCards';
+import type { CustomCard, CustomPack, CardIntensity, CardProbability, CustomCardType } from '@/types/customCards';
 import {
   MAX_CARD_TEXT_LENGTH,
   MIN_CARD_TEXT_LENGTH,
@@ -36,7 +35,7 @@ const CreateCardModal: React.FC<CreateCardModalProps> = ({
   editingCard,
 }) => {
   const [text, setText] = useState('');
-  const [type, setType] = useState<ChallengeType>('direct');
+  const [type, setType] = useState<CustomCardType>('direct');
   const [intensity, setIntensity] = useState<CardIntensity>(2);
   const [timerSeconds, setTimerSeconds] = useState<number>(60);
   const [powerType, setPowerType] = useState<string>('ESCUDO');

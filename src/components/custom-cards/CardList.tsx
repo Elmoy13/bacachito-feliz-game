@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PenLine, Trash2, Copy } from 'lucide-react';
-import type { CustomCard } from '@/types/customCards';
+import type { CustomCard, CustomCardType } from '@/types/customCards';
 import { MAX_CUSTOM_CARDS } from '@/types/customCards';
-import { ChallengeType } from '@/types/game';
 import { TYPE_CONFIG } from './TypeSelector';
 import EmptyState from './EmptyState';
 
@@ -15,7 +14,7 @@ interface CardListProps {
   onCreate: () => void;
 }
 
-const FILTER_OPTIONS: { value: '' | ChallengeType; label: string }[] = [
+const FILTER_OPTIONS: { value: '' | CustomCardType; label: string }[] = [
   { value: '', label: 'Todas' },
   { value: 'direct', label: 'Directo' },
   { value: 'group', label: 'Grupal' },
@@ -28,7 +27,7 @@ const FILTER_OPTIONS: { value: '' | ChallengeType; label: string }[] = [
 ];
 
 const CardList: React.FC<CardListProps> = ({ cards, onEdit, onDelete, onDuplicate, onCreate }) => {
-  const [filter, setFilter] = useState<'' | ChallengeType>('');
+  const [filter, setFilter] = useState<'' | CustomCardType>('');
 
   const filtered = useMemo(
     () => (filter ? cards.filter((c) => c.type === filter) : cards),

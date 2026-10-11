@@ -51,6 +51,9 @@
     --card-category: 200 80% 50%;
     --card-category-foreground: 0 0% 100%;
 
+    --card-prefieres: 160 84% 39%;
+    --card-prefieres-foreground: 0 0% 100%;
+
     /* EXTREME - Red for intense challenges */
     --extreme: 0 85% 50%;
     --extreme-foreground: 0 0% 100%;
@@ -185,6 +188,11 @@
   .card-game-category {
     background: linear-gradient(135deg, hsl(var(--card-category)) 0%, hsl(210 80% 40%) 100%);
     color: hsl(var(--card-category-foreground));
+  }
+
+  .card-game-prefieres {
+    background: linear-gradient(135deg, hsl(var(--card-prefieres)) 0%, hsl(175 84% 26%) 100%);
+    color: hsl(var(--card-prefieres-foreground));
   }
 
   .card-mode {

@@ -4,7 +4,9 @@ import { useGame } from '@/context/GameContext';
 import { Clock, Zap, Target, Crown, Sparkles } from 'lucide-react';
 import ShareButton from '@/components/game/ShareButton';
 import RegionBadge from '@/components/game/RegionBadge';
+import PrefieresContent from '@/components/game/PrefieresContent';
 import { applySlang } from '@/utils/slangEngine';
+import { buildPrefieresShareText, resolvePrefieresTexts } from '@/utils/prefieres';
 
 interface StoryCardProps {
   onOpenSubGame?: () => void;
@@ -27,10 +29,29 @@ const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
 
   // Process text once when challenge changes
   const processedContent = useMemo(() => {
-    if (!currentChallenge) return { title: '', subtitle: '' };
+    if (!currentChallenge) return { title: '', subtitle: '', optionA: '', optionB: '' };
+    const slang = (text: string) => (text ? applySlang(text, slangRegion) : '');
+    const process = (text?: string) => (text ? slang(getProcessedText(text)) : '');
+    if (currentChallenge.type === 'prefieres') {
+      // Título y opciones se resuelven juntos para no repetir jugadores entre 👍 y 👎
+      const resolved = resolvePrefieresTexts(
+        getProcessedText,
+        currentChallenge.template,
+        currentChallenge.optionA,
+        currentChallenge.optionB
+      );
+      return {
+        title: slang(resolved.title),
+        subtitle: process(currentChallenge.subtitle),
+        optionA: slang(resolved.optionA),
+        optionB: slang(resolved.optionB),
+      };
+    }
     return {
-      title: applySlang(getProcessedText(currentChallenge.template), slangRegion),
-      subtitle: currentChallenge.subtitle ? applySlang(getProcessedText(currentChallenge.subtitle), slangRegion) : ''
+      title: process(currentChallenge.template),
+      subtitle: process(currentChallenge.subtitle),
+      optionA: '',
+      optionB: '',
     };
   }, [currentChallenge, currentChallengeIndex, getProcessedText, slangRegion]);
 
@@ -68,6 +89,7 @@ const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
   const isPower = currentChallenge.isPower;
   const isTimed = currentChallenge.type === 'timed';
   const isCategory = currentChallenge.type === 'category';
+  const isPrefieres = currentChallenge.type === 'prefieres';
   const hasSubGames = currentChallenge.hasSubGames;
   const isCustom = currentChallenge.id.startsWith('custom-');
 
@@ -139,6 +161,7 @@ const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
     if (isPower) return 'card-game card-game-power';
     if (isTimed) return 'card-game card-game-timed';
     if (isCategory) return 'card-game card-game-category';
+    if (isPrefieres) return 'card-game card-game-prefieres';
     return 'card-game card-game-normal';
   };
 
@@ -158,6 +181,7 @@ const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
     if (isPower) return 'PODER';
     if (isTimed) return 'TIEMPO';
     if (isCategory) return 'CATEGORÍA';
+    if (isPrefieres) return '🤔 ¿QUÉ PREFIERES?';
     return null;
   };
 
@@ -193,7 +217,11 @@ const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
           {/* Share button */}
           <ShareButton
             challenge={currentChallenge}
-            processedText={processedContent.title}
+            processedText={
+              isPrefieres
+                ? buildPrefieresShareText(processedContent.title, processedContent.optionA, processedContent.optionB)
+                : processedContent.title
+            }
             gameMode={selectedMode?.id || 'unknown'}
           />
 
@@ -237,7 +265,19 @@ const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
             </motion.div>
           )}
 
+          {/* "¿Qué prefieres?": dos opciones + regla de la minoría */}
+          {isPrefieres && (
+            <PrefieresContent
+              title={processedContent.title}
+              optionA={processedContent.optionA}
+              optionB={processedContent.optionB}
+              sips={currentChallenge.sips}
+              resetKey={currentChallenge.id + currentChallengeIndex}
+            />
+          )}
+
           {/* Main Challenge Text */}
+          {!isPrefieres && (
           <motion.h2
             className="heading-card mb-6 leading-tight px-2"
             initial={{ opacity: 0, y: 20 }}
@@ -246,6 +286,7 @@ const StoryCard: React.FC<StoryCardProps> = ({ onOpenSubGame }) => {
           >
             {processedContent.title}
           </motion.h2>
+          )}
 
           {/* Subtitle / Instructions */}
           {processedContent.subtitle && (

@@ -6,6 +6,7 @@ import {
   getShareableBadgeText,
   getCardTypeEmoji,
 } from '@/utils/shareUtils';
+import { getPrefieresRuleText } from '@/utils/prefieres';
 
 interface ShareableCardProps {
   challenge: Challenge;
@@ -28,6 +29,10 @@ const ShareableCard = forwardRef<HTMLDivElement, ShareableCardProps>(
     const safeSubtitle = challenge.subtitle
       ? sanitizeTextForShare(challenge.subtitle)
       : null;
+
+    // "¿Qué prefieres?": processedText = "Título\n👍 A\n👎 B"
+    const isPrefieres = challenge.type === 'prefieres';
+    const [prefieresTitle, ...prefieresOptions] = isPrefieres ? safeText.split('\n') : [];
 
     return (
       <div
@@ -128,7 +133,48 @@ const ShareableCard = forwardRef<HTMLDivElement, ShareableCardProps>(
           </div>
         )}
 
+        {/* "¿Qué prefieres?": título + opciones + regla */}
+        {isPrefieres && (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '36px',
+              width: '100%',
+              maxWidth: '900px',
+            }}
+          >
+            <div style={{ fontSize: '64px', fontWeight: 900, textAlign: 'center', lineHeight: 1.2 }}>
+              {prefieresTitle}
+            </div>
+            {prefieresOptions.map((option, index) => (
+              <div
+                key={index}
+                style={{
+                  width: '100%',
+                  background: 'rgba(255,255,255,0.18)',
+                  border: '3px solid rgba(255,255,255,0.3)',
+                  borderRadius: '40px',
+                  padding: '40px 48px',
+                  fontSize: '52px',
+                  fontWeight: 800,
+                  lineHeight: 1.25,
+                  textAlign: 'left',
+                  wordBreak: 'break-word',
+                }}
+              >
+                {option}
+              </div>
+            ))}
+            <div style={{ fontSize: '34px', fontWeight: 600, opacity: 0.9, textAlign: 'center' }}>
+              {getPrefieresRuleText(challenge.sips)}
+            </div>
+          </div>
+        )}
+
         {/* Main challenge text */}
+        {!isPrefieres && (
         <div
           style={{
             fontSize: '64px',
@@ -141,6 +187,7 @@ const ShareableCard = forwardRef<HTMLDivElement, ShareableCardProps>(
         >
           {safeText}
         </div>
+        )}
 
         {/* Subtitle */}
         {safeSubtitle && (

@@ -97,8 +97,14 @@ const saveHistory = (ids: string[]) => {
   } catch { /* ignore */ }
 };
 
+// Tipos "normales" (no especiales). Se usan para completar la partida si faltan cartas.
+const NORMAL_TYPES: string[] = ['direct', 'group', 'category', 'vote', 'random', 'prefieres'];
+// Tipos que la carta con subjuegos puede reemplazar (nunca 'prefieres' ni especiales)
+const SUBGAME_REPLACEABLE_TYPES: string[] = ['direct', 'group', 'category', 'vote', 'random'];
+
 // Selecciona un subset aleatorio y balanceado de cartas
-const selectBalancedChallenges = (
+// Exportada solo para pruebas unitarias
+export const selectBalancedChallenges = (
   challenges: Challenge[],
   count: number = 40,
   recentIds: Set<string> = new Set()
@@ -134,23 +140,26 @@ const selectBalancedChallenges = (
   const specialTotal = 1 - normalTotal;
   
   // Distribuir cartas normales con variación
-  const directPct = randomVariation(0.20, 0.03);
-  const groupPct = randomVariation(0.18, 0.03);
-  const categoryPct = randomVariation(0.15, 0.03);
-  const votePct = randomVariation(0.10, 0.02);
-  const randomPct = randomVariation(0.07, 0.02);
+  // 'prefieres' ≈ 12% de las normales; el resto se reescaló proporcionalmente (suma = 0.70)
+  const directPct = randomVariation(0.176, 0.03);
+  const groupPct = randomVariation(0.158, 0.03);
+  const categoryPct = randomVariation(0.132, 0.03);
+  const votePct = randomVariation(0.088, 0.02);
+  const randomPct = randomVariation(0.062, 0.02);
+  const prefieresPct = randomVariation(0.084, 0.02);
   
   // Distribuir cartas especiales con variación
   const timedPct = randomVariation(0.10, 0.03);
   const powerPct = randomVariation(0.10, 0.03);
   const extremePct = randomVariation(0.10, 0.03);
   
-  const distribution = {
+  const distribution: Record<string, number> = {
     'direct': Math.floor(count * directPct * normalTotal),
     'group': Math.floor(count * groupPct * normalTotal),
     'category': Math.floor(count * categoryPct * normalTotal),
     'vote': Math.floor(count * votePct * normalTotal),
     'random': Math.floor(count * randomPct * normalTotal),
+    'prefieres': Math.floor(count * prefieresPct * normalTotal),
     'timed': Math.floor(count * timedPct * specialTotal),
     'power': Math.floor(count * powerPct * specialTotal),
     'extreme': Math.floor(count * extremePct * specialTotal),
@@ -166,9 +175,8 @@ const selectBalancedChallenges = (
   
   // Si no alcanzamos el count, completar con cartas normales prioritariamente
   if (selected.length < count) {
-    const normalTypes = ['direct', 'group', 'category', 'vote', 'random'];
     const remaining = challenges.filter(c => 
-      !selected.includes(c) && normalTypes.includes(c.type)
+      !selected.includes(c) && NORMAL_TYPES.includes(c.type)
     );
     const unseenRemaining = shuffleArray(remaining.filter(c => !recentIds.has(c.id)));
     const seenRemaining = shuffleArray(remaining.filter(c => recentIds.has(c.id)));
@@ -185,9 +193,9 @@ const selectBalancedChallenges = (
     if (subGameCards.length > 0) {
       // Seleccionar una al azar
       const randomSubGameCard = subGameCards[Math.floor(Math.random() * subGameCards.length)];
-      // Reemplazar una carta normal aleatoria (que no sea especial)
+      // Reemplazar una carta normal aleatoria (que no sea especial ni 'prefieres')
       const normalCardIndex = selected.findIndex(c => 
-        ['direct', 'group', 'category', 'vote', 'random'].includes(c.type) && !c.hasSubGames
+        SUBGAME_REPLACEABLE_TYPES.includes(c.type) && !c.hasSubGames
       );
       if (normalCardIndex !== -1) {
         selected[normalCardIndex] = randomSubGameCard;
@@ -274,9 +282,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     // Replace {player2} with a different player than those already used
+    // (todas las apariciones de {player2} son la misma persona)
     if (text.includes('{player2}')) {
       const player2 = getRandomPlayer(usedNames);
-      text = text.replace('{player2}', player2?.name || 'Otro');
+      text = text.split('{player2}').join(player2?.name || 'Otro');
     }
     
     return text;

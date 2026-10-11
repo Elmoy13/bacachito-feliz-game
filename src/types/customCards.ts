@@ -1,5 +1,8 @@
 import { ChallengeType } from './game';
 
+// Las cartas personalizadas no soportan 'prefieres' (requiere dos opciones)
+export type CustomCardType = Exclude<ChallengeType, 'prefieres'>;
+
 export type CardProbability = 1 | 2 | 3;
 
 export const GAME_MODE_OPTIONS = [
@@ -20,7 +23,7 @@ export const PROBABILITY_LABELS: Record<CardProbability, { label: string; emoji:
 export interface CustomCard {
   id: string;
   text: string;
-  type: ChallengeType;
+  type: CustomCardType;
   intensity: 1 | 2 | 3;
   timerSeconds?: number;
   powerType?: string;
@@ -81,7 +84,7 @@ export const PACK_EMOJIS = [
   '💋', '🎪', '🍾', '🥳',
 ];
 
-export const TYPE_PLACEHOLDERS: Record<ChallengeType, string> = {
+export const TYPE_PLACEHOLDERS: Record<CustomCardType, string> = {
   direct: 'Ej: {player} tiene que imitar a {player2} por 30 segundos',
   group: 'Ej: El último en tocarse la nariz, bebe doble',
   category: 'Ej: Categoría: Marcas de cerveza mexicana',
