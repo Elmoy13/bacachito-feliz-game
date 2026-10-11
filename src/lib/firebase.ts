@@ -1,8 +1,9 @@
 import { initializeApp } from 'firebase/app';
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import { getAnalytics, isSupported, logEvent } from 'firebase/analytics';
-import { getAuth, signInAnonymously, onAuthStateChanged, type User } from 'firebase/auth';
+import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, type User } from 'firebase/auth';
 import { getDatabase } from 'firebase/database';
+import { getFunctions } from 'firebase/functions';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDmi6_5t3gvC8wcaTraz6XQ0LJyMuV_FB0",
@@ -24,6 +25,8 @@ const db = initializeFirestore(app, {
 });
 const auth = getAuth(app);
 const rtdb = getDatabase(app);
+const functions = getFunctions(app);
+const googleProvider = new GoogleAuthProvider();
 
 // Initialize Analytics only if supported
 let analyticsInstance: ReturnType<typeof getAnalytics> | null = null;
@@ -49,28 +52,31 @@ export const trackEvent = (eventName: string, params?: Record<string, any>) => {
 
 // Game session interface
 export interface GameSession {
+  uid: string;
   players: string[];
   gameMode: string;
   startedAt: any;
   sessionId?: string;
 }
 
-// Save a new game session
+// Save a new game session (requires an authenticated user)
 export const saveGameSession = async (players: string[], gameMode: string): Promise<string> => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('Usuario no autenticado');
+
   try {
     const gameSession: GameSession = {
+      uid: currentUser.uid,
       players,
       gameMode,
       startedAt: serverTimestamp(),
     };
-    
+
     const docRef = await addDoc(collection(db, 'gameSessions'), gameSession);
-    console.log('Partida guardada con ID:', docRef.id);
     return docRef.id;
   } catch (error) {
-    console.error('Error guardando partida:', error);
     throw error;
   }
 };
 
-export { db, rtdb, auth, collection, getDocs, signInAnonymously, onAuthStateChanged, type User };
+export { app, db, rtdb, auth, functions, googleProvider, collection, getDocs, signInAnonymously, onAuthStateChanged, type User };

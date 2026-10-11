@@ -22,16 +22,13 @@ const BacachitoSVG: React.FC<BacachitoSVGProps> = ({ mood, capStyle, extras, che
       xmlns="http://www.w3.org/2000/svg"
       viewBox="20 10 160 260"
       overflow="visible"
+      shapeRendering="geometricPrecision"
       style={{ width: '100%', height: '100%', display: 'block', overflow: 'visible' }}
     >
       <style>{`
         .bk-line { fill: none; stroke: #212121; stroke-linejoin: round; stroke-linecap: round; }
         .bk-solid { fill: #212121; }
         .bk-white { fill: #ffffff; }
-        @media (prefers-color-scheme: dark) {
-          .bk-line { stroke: #e8e6df; }
-          .bk-solid { fill: #e8e6df; }
-        }
       `}</style>
 
       <BacachitoBody mood={mood} reducedMotion={prefersReducedMotion}>

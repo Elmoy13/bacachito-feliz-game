@@ -4,6 +4,7 @@ import { ArrowLeft, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomCards } from '@/hooks/useCustomCards';
 import { useUser } from '@/context/UserContext';
+import { useAuth } from '@/context/AuthContext';
 import type { CustomCard, CustomPack } from '@/types/customCards';
 import { MAX_CUSTOM_CARDS, MAX_CUSTOM_PACKS } from '@/types/customCards';
 import CardList from './CardList';
@@ -11,6 +12,7 @@ import PackList from './PackList';
 import CommunityTab from './CommunityTab';
 import CreateCardModal from './CreateCardModal';
 import CreatePackModal from './CreatePackModal';
+import PaywallModal from '@/components/premium/PaywallModal';
 import { toast } from 'sonner';
 
 type Tab = 'cards' | 'packs' | 'community';
@@ -24,6 +26,8 @@ const TABS: { id: Tab; label: string }[] = [
 const CustomCardsPage: React.FC = () => {
   const navigate = useNavigate();
   const { loading: authLoading } = useUser();
+  const { isPremium, isAuthenticated, openAuthModal } = useAuth();
+  const [showPaywall, setShowPaywall] = useState(false);
   const {
     cards,
     packs,
@@ -44,13 +48,19 @@ const CustomCardsPage: React.FC = () => {
   const [editingPack, setEditingPack] = useState<CustomPack | null>(null);
 
   const handleCreateCard = useCallback(() => {
+    // Creating custom cards is a premium feature
+    if (!isPremium) {
+      if (isAuthenticated) setShowPaywall(true);
+      else openAuthModal();
+      return;
+    }
     if (cards.length >= MAX_CUSTOM_CARDS) {
       toast.error(`Máximo ${MAX_CUSTOM_CARDS} cartas alcanzado`);
       return;
     }
     setEditingCard(null);
     setCardModalOpen(true);
-  }, [cards.length]);
+  }, [cards.length, isPremium, isAuthenticated, openAuthModal]);
 
   const handleEditCard = useCallback((card: CustomCard) => {
     setEditingCard(card);
@@ -85,13 +95,19 @@ const CustomCardsPage: React.FC = () => {
   );
 
   const handleCreatePack = useCallback(() => {
+    // Creating packs is a premium feature
+    if (!isPremium) {
+      if (isAuthenticated) setShowPaywall(true);
+      else openAuthModal();
+      return;
+    }
     if (packs.length >= MAX_CUSTOM_PACKS) {
       toast.error(`Máximo ${MAX_CUSTOM_PACKS} packs alcanzado`);
       return;
     }
     setEditingPack(null);
     setPackModalOpen(true);
-  }, [packs.length]);
+  }, [packs.length, isPremium, isAuthenticated, openAuthModal]);
 
   const handleEditPack = useCallback((pack: CustomPack) => {
     setEditingPack(pack);
@@ -225,6 +241,11 @@ const CustomCardsPage: React.FC = () => {
         onDelete={editingPack ? () => removePack(editingPack.id) : undefined}
         editingPack={editingPack}
       />
+
+      {/* Paywall */}
+      {showPaywall && (
+        <PaywallModal onClose={() => setShowPaywall(false)} trigger="custom_cards" />
+      )}
     </div>
   );
 };

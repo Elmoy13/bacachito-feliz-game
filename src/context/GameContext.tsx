@@ -72,8 +72,37 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return shuffled;
 };
 
+// Historial de cartas entre partidas para evitar repeticiones
+const CARD_HISTORY_KEY = 'bcf_card_history';
+const HISTORY_GAMES = 2; // Número de partidas recientes a recordar
+
+const loadRecentHistory = (): Set<string> => {
+  try {
+    const raw = localStorage.getItem(CARD_HISTORY_KEY);
+    if (!raw) return new Set();
+    const ids: string[] = JSON.parse(raw);
+    return new Set(ids);
+  } catch {
+    return new Set();
+  }
+};
+
+const saveHistory = (ids: string[]) => {
+  try {
+    const raw = localStorage.getItem(CARD_HISTORY_KEY);
+    const previous: string[] = raw ? JSON.parse(raw) : [];
+    // Guardar solo las cartas de las últimas HISTORY_GAMES partidas (~50 cartas por partida)
+    const updated = [...ids, ...previous].slice(0, HISTORY_GAMES * 50);
+    localStorage.setItem(CARD_HISTORY_KEY, JSON.stringify(updated));
+  } catch { /* ignore */ }
+};
+
 // Selecciona un subset aleatorio y balanceado de cartas
-const selectBalancedChallenges = (challenges: Challenge[], count: number = 40): Challenge[] => {
+const selectBalancedChallenges = (
+  challenges: Challenge[],
+  count: number = 40,
+  recentIds: Set<string> = new Set()
+): Challenge[] => {
   // Separar por tipos para balance
   const byType: Record<string, Challenge[]> = {};
   
@@ -85,9 +114,11 @@ const selectBalancedChallenges = (challenges: Challenge[], count: number = 40): 
     byType[type].push(challenge);
   });
   
-  // Mezclar cada tipo independientemente
+  // Mezclar cada tipo independientemente, priorizando cartas no vistas recientemente
   Object.keys(byType).forEach(type => {
-    byType[type] = shuffleArray(byType[type]);
+    const unseen = shuffleArray(byType[type].filter(c => !recentIds.has(c.id)));
+    const seen = shuffleArray(byType[type].filter(c => recentIds.has(c.id)));
+    byType[type] = [...unseen, ...seen];
   });
   
   const selected: Challenge[] = [];
@@ -139,7 +170,9 @@ const selectBalancedChallenges = (challenges: Challenge[], count: number = 40): 
     const remaining = challenges.filter(c => 
       !selected.includes(c) && normalTypes.includes(c.type)
     );
-    const shuffledRemaining = shuffleArray(remaining);
+    const unseenRemaining = shuffleArray(remaining.filter(c => !recentIds.has(c.id)));
+    const seenRemaining = shuffleArray(remaining.filter(c => recentIds.has(c.id)));
+    const shuffledRemaining = [...unseenRemaining, ...seenRemaining];
     const needed = count - selected.length;
     selected.push(...shuffledRemaining.slice(0, needed));
   }
@@ -314,11 +347,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Random card count between 30-40 per game
       const totalTarget = 30 + Math.floor(Math.random() * 11);
       const baseCount = Math.min(totalTarget - customCount, challenges.length);
-      const selectedChallenges = selectBalancedChallenges(challenges, baseCount);
+      const recentIds = loadRecentHistory();
+      const selectedChallenges = selectBalancedChallenges(challenges, baseCount, recentIds);
       
       // Merge and shuffle
       const allChallenges = shuffleArray([...selectedChallenges, ...customChallenges]);
       
+      // Guardar historial para evitar repetir cartas en las próximas partidas
+      saveHistory(allChallenges.map(c => c.id));
+
       setShuffledChallenges(allChallenges);
       setCurrentChallengeIndex(0);
       setIsPlaying(true);
@@ -341,11 +378,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Save game session to Firebase silently
       try {
         const playerNames = players.map(p => p.name);
-        const sessionId = await saveGameSession(playerNames, selectedMode.name);
-        console.log('Partida iniciada y guardada:', sessionId);
-      } catch (error) {
-        console.error('Error al guardar la partida:', error);
-      }
+        await saveGameSession(playerNames, selectedMode.name);
+      } catch { /* ignore */ }
     }
   }, [players, selectedMode, customCardsConfig, slangRegion]);
 

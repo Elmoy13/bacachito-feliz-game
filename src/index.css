@@ -300,6 +300,15 @@
     @apply fixed bottom-6 right-6 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center z-50;
     box-shadow: var(--shadow-lg);
   }
+
+  /* Bacachito mascot SVG — dark mode follows the app theme (.dark) */
+  .dark .bk-line {
+    stroke: #e8e6df;
+  }
+
+  .dark .bk-solid {
+    fill: #e8e6df;
+  }
 }
 
 @layer utilities {
@@ -392,4 +401,14 @@
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* Bacachito logo floating animation */
+@keyframes bacachito-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.bacachito-float {
+  animation: bacachito-float 3s ease-in-out infinite;
 }

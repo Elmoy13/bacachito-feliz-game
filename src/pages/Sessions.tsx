@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Users, Calendar, Gamepad2 } from 'lucide-react';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 
 interface GameSession {
   id: string;
@@ -14,14 +15,18 @@ interface GameSession {
 
 const Sessions: React.FC = () => {
   const navigate = useNavigate();
+  const { uid } = useAuth();
   const [sessions, setSessions] = useState<GameSession[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!uid) return;
+
     const fetchSessions = async () => {
       try {
         const sessionsQuery = query(
           collection(db, 'gameSessions'),
+          where('uid', '==', uid),
           orderBy('startedAt', 'desc')
         );
         const querySnapshot = await getDocs(sessionsQuery);
@@ -46,7 +51,7 @@ const Sessions: React.FC = () => {
     };
 
     fetchSessions();
-  }, []);
+  }, [uid]);
 
   const formatDate = (timestamp: any) => {
     if (!timestamp || !timestamp.toDate) return 'Fecha desconocida';

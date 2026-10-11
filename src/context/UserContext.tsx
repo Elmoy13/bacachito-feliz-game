@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth, signInAnonymously, onAuthStateChanged, type User } from '@/lib/firebase';
+import React, { createContext, useContext } from 'react';
+import { type User } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 
 interface UserContextType {
   user: User | null;
@@ -17,33 +18,14 @@ const UserContext = createContext<UserContextType>({
 
 export const useUser = () => useContext(UserContext);
 
+// Legacy context kept for backward compatibility.
+// Auth state now lives in AuthContext (must be rendered inside AuthProvider).
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        setLoading(false);
-      } else {
-        // Sign in anonymously
-        try {
-          await signInAnonymously(auth);
-          // onAuthStateChanged will fire again with the new user
-        } catch (error) {
-          console.error('Anonymous auth error:', error);
-          setLoading(false);
-        }
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
+  const { user, uid, loading } = useAuth();
 
   const value: UserContextType = {
     user,
-    uid: user?.uid || null,
+    uid,
     isAuthenticated: !!user,
     loading,
   };

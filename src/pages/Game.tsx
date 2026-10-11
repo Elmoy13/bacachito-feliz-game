@@ -6,6 +6,8 @@ import StoryCard from '@/components/StoryCard';
 import PlayerInput from '@/components/PlayerInput';
 import { SubGameModal } from '@/components/SubGameModal';
 import { useGame } from '@/context/GameContext';
+import { useAuth } from '@/context/AuthContext';
+import PaywallModal from '@/components/premium/PaywallModal';
 import RegionBadge from '@/components/game/RegionBadge';
 import Bacachito from '@/components/bacachito/Bacachito';
 import SpeechBubble from '@/components/bacachito/SpeechBubble';
@@ -29,11 +31,26 @@ const Game: React.FC = () => {
     selectedMode,
     shuffledChallenges,
   } = useGame();
+  const { isPremium, isAuthenticated, openAuthModal } = useAuth();
   const [showAddPlayer, setShowAddPlayer] = useState(false);
   const [expandedTimedCard, setExpandedTimedCard] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [showSubGameModal, setShowSubGameModal] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const lastInteractionRef = useRef(Date.now());
+
+  // Mini-juegos son premium: anónimos -> login, autenticados sin premium -> paywall
+  const handleOpenSubGame = () => {
+    if (!isPremium) {
+      if (isAuthenticated) {
+        setShowPaywall(true);
+      } else {
+        openAuthModal();
+      }
+      return;
+    }
+    setShowSubGameModal(true);
+  };
 
   // Track user interaction time
   useEffect(() => {
@@ -237,7 +254,7 @@ const Game: React.FC = () => {
                 <SpeechBubble text={speechText} isVisible={speechVisible} position="inline-right" />
               </div>
             </div>
-            <StoryCard onOpenSubGame={() => setShowSubGameModal(true)} />
+            <StoryCard onOpenSubGame={handleOpenSubGame} />
           </div>
         )}
       </div>
@@ -343,6 +360,11 @@ const Game: React.FC = () => {
           onClose={() => setShowSubGameModal(false)}
           availableGames={currentChallenge.subGames}
         />
+      )}
+
+      {/* Paywall para mini-juegos premium */}
+      {showPaywall && (
+        <PaywallModal onClose={() => setShowPaywall(false)} trigger="mode_select" />
       )}
     </motion.div>
   );

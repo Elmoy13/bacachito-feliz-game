@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { PenLine } from 'lucide-react';
+import { PenLine, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomCards } from '@/hooks/useCustomCards';
+import { useAuth } from '@/context/AuthContext';
 import type { CustomCard } from '@/types/customCards';
 import { PROBABILITY_LABELS } from '@/types/customCards';
 
@@ -31,6 +32,7 @@ const CustomCardsSection: React.FC<CustomCardsSectionProps> = ({
 }) => {
   const navigate = useNavigate();
   const { cards, packs, loading } = useCustomCards();
+  const { isPremium, isAuthenticated, openAuthModal, openPaywall } = useAuth();
 
   // Cards that match the selected game mode
   const modeFilteredCards = useMemo(() => {
@@ -69,11 +71,20 @@ const CustomCardsSection: React.FC<CustomCardsSectionProps> = ({
           ¿Quieres agregar tus propios retos?
         </p>
         <button
-          onClick={() => navigate('/mis-cartas')}
+          onClick={() => {
+            // Custom cards are a premium feature
+            if (!isPremium) {
+              if (isAuthenticated) openPaywall();
+              else openAuthModal();
+              return;
+            }
+            navigate('/mis-cartas');
+          }}
           className="btn-primary text-sm"
         >
           <PenLine size={16} className="mr-2" />
           Crear cartas personalizadas
+          {!isPremium && <Crown size={14} className="ml-1.5 text-amber-300" />}
         </button>
       </motion.div>
     );

@@ -1,13 +1,57 @@
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { PenLine, Globe } from 'lucide-react';
+import { PenLine, Globe, Crown } from 'lucide-react';
 import Blob from '@/components/Blob';
+import UserMenu from '@/components/auth/UserMenu';
+import PaywallModal from '@/components/premium/PaywallModal';
+import { useAuth } from '@/context/AuthContext';
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
+  const { isPremium, isAuthenticated, openAuthModal } = useAuth();
+  const [showPaywall, setShowPaywall] = useState(false);
+  const pendingRoute = useRef<string | null>(null);
+
+  // Al volverse premium, continuar a la ruta pendiente
+  useEffect(() => {
+    if (isPremium && pendingRoute.current) {
+      const route = pendingRoute.current;
+      pendingRoute.current = null;
+      setShowPaywall(false);
+      navigate(route);
+    }
+  }, [isPremium, navigate]);
+
+  // Tras iniciar sesión con una cuenta que ya es premium
+  useEffect(() => {
+    if (isAuthenticated && isPremium && pendingRoute.current) {
+      const route = pendingRoute.current;
+      pendingRoute.current = null;
+      navigate(route);
+    }
+  }, [isAuthenticated, isPremium, navigate]);
+
+  const goPremium = (path: string) => {
+    if (isPremium) {
+      navigate(path);
+      return;
+    }
+    pendingRoute.current = path;
+    if (isAuthenticated) {
+      setShowPaywall(true);
+    } else {
+      openAuthModal();
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-6">
+      {/* User menu */}
+      <div className="absolute top-4 right-4 z-50">
+        <UserMenu />
+      </div>
+
       {/* Background Blobs */}
       <Blob className="blob-1" delay={0} />
       <Blob className="blob-2" delay={0.2} />
@@ -71,7 +115,7 @@ const Landing: React.FC = () => {
         </motion.button>
 
         <motion.button
-          onClick={() => navigate('/multiplayer/create')}
+          onClick={() => goPremium('/multiplayer/create')}
           className="btn-ghost mt-4 mx-auto flex items-center gap-2 text-sm"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -81,10 +125,11 @@ const Landing: React.FC = () => {
         >
           <Globe size={14} />
           Peda Remota
+          {!isPremium && <Crown size={12} className="text-amber-500" />}
         </motion.button>
 
         <motion.button
-          onClick={() => navigate('/mis-cartas')}
+          onClick={() => goPremium('/mis-cartas')}
           className="flex items-center gap-2 mx-auto mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -93,6 +138,7 @@ const Landing: React.FC = () => {
         >
           <PenLine size={14} />
           Mis cartas personalizadas
+          {!isPremium && <Crown size={12} className="text-amber-500" />}
         </motion.button>
 
         <motion.p
@@ -104,6 +150,10 @@ const Landing: React.FC = () => {
           Bebe con responsabilidad. Solo mayores de 18.
         </motion.p>
       </div>
+
+      {showPaywall && (
+        <PaywallModal onClose={() => setShowPaywall(false)} trigger="feature_gate" />
+      )}
     </div>
   );
 };

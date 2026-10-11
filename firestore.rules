@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Sesiones de juego (ya existente)
+    match /sessions/{sessionId} {
+      allow read, write: if true;
+    }
+
+    // Partidas guardadas — solo el dueño puede leer/crear
+    match /gameSessions/{sessionId} {
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Suscripción premium — usuario lee, solo backend escribe
+    match /users/{userId}/subscription/{docId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    // Stripe customer data — usuario lee, solo backend escribe
+    match /users/{userId}/stripe/{docId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    // Cartas personalizadas — solo el dueño
+    match /users/{userId}/customCards/{cardId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Packs personalizados — solo el dueño
+    match /users/{userId}/customPacks/{packId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Waitlist (comunidad) — cualquiera autenticado crea
+    match /waitlist/{docId} {
+      allow create: if request.auth != null;
+      allow read: if false;
+    }
+  }
+}
