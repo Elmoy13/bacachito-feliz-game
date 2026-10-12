@@ -2,6 +2,12 @@
 <html lang="es-MX">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Dominio oficial: los hosts de Firebase redirigen a bacachitofeliz.com (ahí sí está autorizado el login)
+      if (/^bacachito-feliz\.(web\.app|firebaseapp\.com)$/.test(location.hostname)) {
+        location.replace('https://bacachitofeliz.com' + location.pathname + location.search + location.hash);
+      }
+    </script>
     <link rel="icon" type="image/png" href="/logosinletras.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bacachito Feliz · El juego de fiesta 100% mexicano</title>
